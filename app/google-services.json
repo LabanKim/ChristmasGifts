@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "739653991018",
+    "firebase_url": "https://christmasgifts-71304.firebaseio.com",
+    "project_id": "christmasgifts-71304",
+    "storage_bucket": "christmasgifts-71304.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:739653991018:android:e32f6a2b74ac96d1",
+        "android_client_info": {
+          "package_name": "com.fusion.kim.askproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "739653991018-dupdr9smdbvh4nu898jt51490tma04ev.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fusion.kim.askproject",
+            "certificate_hash": "3e96ce78025fef767ced18aac43e93d3dd785579"
+          }
+        },
+        {
+          "client_id": "739653991018-5cdm71p0hlh1eviu8c4osiv8vr8mebbu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPU4Uezv4T2uRU89tibktn_V5F33BrmUU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "739653991018-5cdm71p0hlh1eviu8c4osiv8vr8mebbu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
