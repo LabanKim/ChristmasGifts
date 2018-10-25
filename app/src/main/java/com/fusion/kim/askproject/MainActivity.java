@@ -1,13 +1,13 @@
 package com.fusion.kim.askproject;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,11 +17,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.fusion.kim.askproject.Models.Person;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 
 
 public class MainActivity extends AppCompatActivity
@@ -34,6 +42,7 @@ public class MainActivity extends AppCompatActivity
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    private DatabaseReference mPeopleListRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +76,10 @@ public class MainActivity extends AppCompatActivity
             finish();
 
         }
+
+        mPeopleListRef = FirebaseDatabase.getInstance().getReference().child("PeopleList")
+                .child(mAuth.getCurrentUser().getUid());
+        mPeopleListRef.keepSynced(true);
 
         mPeopleRv = findViewById(R.id.rv_people_list);
         mPeopleRv.setLayoutManager(new LinearLayoutManager(this));
@@ -105,6 +118,32 @@ public class MainActivity extends AppCompatActivity
 
         mAuth.addAuthStateListener(mAuthListener);
 
+        Query query = mPeopleListRef.limitToLast(50);
+
+        FirebaseRecyclerOptions<Person> options =
+                new FirebaseRecyclerOptions.Builder<Person>()
+                        .setQuery(query, Person.class)
+                        .setLifecycleOwner(this)
+                        .build();
+
+        FirebaseRecyclerAdapter<Person, PeopleViewHolder> adapter = new FirebaseRecyclerAdapter<Person, PeopleViewHolder>(options) {
+            @Override
+            protected void onBindViewHolder(@NonNull PeopleViewHolder holder, int position, @NonNull Person model) {
+
+                holder.mNameTv.setText(model.getPersonName());
+
+            }
+
+            @Override
+            public PeopleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                return new PeopleViewHolder(LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_people_list, parent, false));
+            }
+        };
+
+        adapter.startListening();
+        mPeopleRv.setAdapter(adapter);
+
 
     }
 
@@ -140,6 +179,13 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
 
+        if (id == R.id.action_add_person) {
+
+            showAddPersonDialog();
+
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -171,6 +217,45 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    private void showAddPersonDialog(){
 
+        final String [] options = {"From Contacts", "Add Manually"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        // Get the layout inflater
+        builder.setTitle("Add a person to your list")
+                .setItems(options, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // The 'which' argument contains the index position
+                // of the selected item
+
+                if (options[which].equals(options[1])){
+
+                    startActivity(new Intent(MainActivity.this, AddPersonActivity.class));
+
+                }
+
+
+            }
+        }).show();
+
+
+    }
+
+    private class PeopleViewHolder extends RecyclerView.ViewHolder{
+
+        private View mView;
+        private TextView mNameTv;
+        private ImageView mGiftIv;
+
+        public PeopleViewHolder(View itemView) {
+            super(itemView);
+
+            mView = itemView;
+            mNameTv = itemView.findViewById(R.id.tv_person_name);
+            mGiftIv = itemView.findViewById(R.id.iv_gift_icon);
+
+        }
+    }
 
 }
