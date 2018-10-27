@@ -4,33 +4,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".MainActivity"
-    tools:showIn="@layout/app_bar_main"
-    android:background="@drawable/xmas_one">
+    android:background="@drawable/xmas_five"
+    tools:context=".GiftsListActivity">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_people_list"
+        android:id="@+id/rv_gifts_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
     </android.support.v7.widget.RecyclerView>
 
-
-    <ProgressBar
-        android:id="@+id/pb_loading_people"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="gone"/>
-
     <TextView
-        android:id="@+id/tv_main_error"
+        android:id="@+id/tv_no_gifts_error"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@android:color/white"
         android:textSize="17sp"
-        android:text="Use the button at the top right of the screen to add a person."
+        android:text="Use the button at the top right of the screen to add a gift."
         android:visibility="invisible"
         android:textAlignment="center"
         android:paddingVertical="10dp"
@@ -41,14 +31,14 @@
         android:layout_marginBottom="70dp" />
 
     <RelativeLayout
-        android:id="@+id/layout_items_count"
+        android:id="@+id/layout_gifts_items_count"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:paddingHorizontal="16sp"
         android:paddingVertical="10dp"
         android:layout_alignParentBottom="true"
         android:background="@color/colorTransparentBlack"
-        android:visibility="invisible">
+        android:visibility="visible">
 
         <TextView
             android:id="@+id/tv_total_cost"
@@ -75,5 +65,7 @@
             android:layout_marginTop="3dp"/>
 
     </RelativeLayout>
+
+
 
 </RelativeLayout>

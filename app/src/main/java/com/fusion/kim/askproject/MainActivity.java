@@ -3,10 +3,15 @@ package com.fusion.kim.askproject;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -20,6 +25,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,22 +33,31 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.fusion.kim.askproject.Models.Person;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private RecyclerView mPeopleRv;
-    private TextView mErrorTv;
+    private TextView mNoItemsTv;
+    private RelativeLayout mItemsCoutnLayout;
 
     private ProgressBar mLoadingPeoplePb;
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private DatabaseReference mPeopleListRef;
+
+    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int REQUEST_CODE_PICK_CONTACTS = 1;
+    private Uri uriContact;
+    private String contactID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,16 +101,15 @@ public class MainActivity extends AppCompatActivity
         mPeopleRv.setHasFixedSize(true);
 
         mLoadingPeoplePb = findViewById(R.id.pb_loading_people);
-        mErrorTv = findViewById(R.id.tv_main_error);
+        mNoItemsTv = findViewById(R.id.tv_main_error);
+
+        mItemsCoutnLayout = findViewById(R.id.layout_items_count);
 
         NavigationView navView = findViewById(R.id.nav_view);
         View headerView = navView.inflateHeaderView(R.layout.nav_header_main);
-        ImageView profileImageIv = headerView.findViewById(R.id.iv_profile_pic);
         TextView userNameTv = headerView.findViewById(R.id.tv_nav_user_name);
         TextView userEmailTv = headerView.findViewById(R.id.tv_user_email);
         TextView appNameTv = headerView.findViewById(R.id.tv_project_name);
-        TextView phoneNumber = headerView.findViewById(R.id.tv_nav_phone_number);
-        userNameTv.setText("Name");
         appNameTv.setText("Christmas Gift List");
 
 
@@ -118,6 +132,30 @@ public class MainActivity extends AppCompatActivity
 
         mAuth.addAuthStateListener(mAuthListener);
 
+        mPeopleListRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                if (!dataSnapshot.hasChildren()){
+
+                    mNoItemsTv.setVisibility(View.VISIBLE);
+                    mItemsCoutnLayout.setVisibility(View.GONE);
+
+                } else {
+
+                    mNoItemsTv.setVisibility(View.GONE);
+                    mItemsCoutnLayout.setVisibility(View.VISIBLE);
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
         Query query = mPeopleListRef.limitToLast(50);
 
         FirebaseRecyclerOptions<Person> options =
@@ -128,9 +166,56 @@ public class MainActivity extends AppCompatActivity
 
         FirebaseRecyclerAdapter<Person, PeopleViewHolder> adapter = new FirebaseRecyclerAdapter<Person, PeopleViewHolder>(options) {
             @Override
-            protected void onBindViewHolder(@NonNull PeopleViewHolder holder, int position, @NonNull Person model) {
+            protected void onBindViewHolder(@NonNull PeopleViewHolder holder, final int position, @NonNull final Person model) {
 
                 holder.mNameTv.setText(model.getPersonName());
+
+                holder.mView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        Intent giftsIntent = new Intent(MainActivity.this, GiftsListActivity.class);
+                        giftsIntent.putExtra("personName", model.getPersonName());
+                        giftsIntent.putExtra("personID", getRef(position).getKey());
+                        startActivity(giftsIntent);
+
+                    }
+                });
+
+                holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+
+                        final String [] options = {"Edit", "Delete"};
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        // Get the layout inflater
+                        builder.setTitle(model.getPersonName())
+                                .setItems(options, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // The 'which' argument contains the index position
+                                        // of the selected item
+
+                                        if (options[which].equals(options[1])){
+
+
+
+                                        } else if (options[which].equals(options[0])){
+
+                                            Intent editIntent = new Intent(MainActivity.this, EditPersonActivity.class);
+                                            editIntent.putExtra("personName", model.getPersonName());
+                                            editIntent.putExtra("personID", getRef(position).getKey());
+                                            startActivity(editIntent);
+
+                                        }
+
+
+                                    }
+                                }).show();
+
+                        return true;
+                    }
+                });
 
             }
 
@@ -172,12 +257,6 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_logout) {
-
-            mAuth.signOut();
-
-            return true;
-        }
 
         if (id == R.id.action_add_person) {
 
@@ -195,19 +274,9 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_poultry) {
-            // Handle the camera action
-        } else if (id == R.id.nav_fish) {
+        if (id == R.id.nav_logout) {
 
-        } else if (id == R.id.nav_dairy) {
-
-        } else if (id == R.id.nav_horticulture) {
-
-        } else if (id == R.id.nav_upload_product) {
-
-
-        } else if (id == R.id.nav_view_my_product){
-
+            mAuth.signOut();
 
         }
 
@@ -233,6 +302,12 @@ public class MainActivity extends AppCompatActivity
 
                     startActivity(new Intent(MainActivity.this, AddPersonActivity.class));
 
+                } else if (options[which].equals(options[0])){
+
+                    // using native contacts selection
+                    // Intent.ACTION_PICK = Pick an item from the data, returning what was selected.
+                    startActivityForResult(new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI), REQUEST_CODE_PICK_CONTACTS);
+
                 }
 
 
@@ -241,6 +316,54 @@ public class MainActivity extends AppCompatActivity
 
 
     }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE_PICK_CONTACTS && resultCode == RESULT_OK) {
+            Log.d(TAG, "Response: " + data.toString());
+            uriContact = data.getData();
+
+            retrieveContactName();
+
+        }
+    }
+
+    private void retrieveContactName() {
+
+        String contactName = null;
+
+        // querying contact data store
+        Cursor cursor = getContentResolver().query(uriContact, null, null, null, null);
+
+        if (cursor.moveToFirst()) {
+
+            // DISPLAY_NAME = The display name for the contact.
+            // HAS_PHONE_NUMBER =   An indicator of whether this contact has at least one phone number.
+
+            contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+        }
+
+        cursor.close();
+
+        Log.d(TAG, "Contact Name: " + contactName);
+
+        if (!TextUtils.isEmpty(contactName)){
+
+            Intent nextIntent = new Intent(MainActivity.this, AddPersonActivity.class);
+            nextIntent.putExtra("contactName", contactName);
+            startActivity(nextIntent);
+
+        } else {
+
+            Toast.makeText(this, "Failed to capture contact name", Toast.LENGTH_SHORT).show();
+
+        }
+
+    }
+
 
     private class PeopleViewHolder extends RecyclerView.ViewHolder{
 

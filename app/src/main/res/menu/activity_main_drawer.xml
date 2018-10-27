@@ -4,72 +4,8 @@
     tools:showIn="navigation_view">
 
     <item
-        android:id="@+id/nav_upload_product"
-        android:icon="@drawable/ic_grey_circle"
-        android:title="Upload Product" />
-
-    <item
-        android:id="@+id/nav_view_my_product"
-        android:icon="@drawable/ic_grey_circle"
-        android:title="View My Products" />
-
-    <item
-        android:id="@+id/nav_sales_dash"
-        android:icon="@drawable/ic_grey_circle"
-        android:title="Transactions" />
-
-    <item android:title="Farming Categories">
-
-        <menu >
-            <item
-                android:id="@+id/nav_poultry"
-                android:icon="@drawable/ic_grey_circle"
-                android:title="Poultry Farming" />
-            <item
-                android:id="@+id/nav_fish"
-                android:icon="@drawable/ic_grey_circle"
-                android:title="Fish Farming" />
-            <item
-                android:id="@+id/nav_dairy"
-                android:icon="@drawable/ic_grey_circle"
-                android:title="Dairy Farming" />
-            <item
-                android:id="@+id/nav_horticulture"
-                android:icon="@drawable/ic_grey_circle"
-                android:title="Horticulture" />
-            <item
-                android:id="@+id/nav_crop"
-                android:icon="@drawable/ic_grey_circle"
-                android:title="Crop Farming" />
-        </menu>
-
-    </item>
-
-
-
-    <item android:title="Agricultural Support">
-        <menu>
-            <item
-                android:id="@+id/nav_services"
-                android:icon="@drawable/ic_grey_circle"
-                android:title="Services" />
-
-        </menu>
-    </item>
-
-    <item android:title="Help and Support">
-        <menu>
-            <item
-                android:id="@+id/nav_help"
-                android:icon="@drawable/ic_grey_circle"
-                android:title="Help" />
-
-            <item
-                android:id="@+id/nav_contact"
-                android:icon="@drawable/ic_grey_circle"
-                android:title="Contact Developer" />
-
-        </menu>
-    </item>
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/baseline_exit_to_app_black_24dp"
+        android:title="Logout" />
 
 </menu>

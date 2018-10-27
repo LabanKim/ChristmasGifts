@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AddPersonActivity"
+    tools:context=".EditPersonActivity"
     android:background="@drawable/xmas_five"
     android:paddingHorizontal="12dp"
     android:paddingTop="10dp">
@@ -26,7 +26,7 @@
             android:textSize="16sp"/>
 
         <EditText
-            android:id="@+id/input_person_name"
+            android:id="@+id/input_edit_person_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
@@ -44,7 +44,7 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/tv_deadline"
+                android:id="@+id/tv_edit_deadline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white"
@@ -54,11 +54,11 @@
                 android:layout_marginLeft="12dp"/>
 
             <ImageView
-                android:id="@+id/iv_pick_date"
+                android:id="@+id/iv_edit_pick_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/baseline_date_range_white_24dp"
-                android:layout_toRightOf="@+id/tv_deadline"
+                android:layout_toRightOf="@+id/tv_edit_deadline"
                 android:layout_marginLeft="25dp"/>
 
         </RelativeLayout>

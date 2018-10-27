@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class AddPersonActivity extends AppCompatActivity {
+public class EditPersonActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private DatabaseReference mPersonListRef;
@@ -39,42 +39,33 @@ public class AddPersonActivity extends AppCompatActivity {
     private TextView mDeadlineTv;
     private ImageView mPickDateIv;
 
-    private ProgressDialog mAddingPD;
+    private ProgressDialog mUpdatingPD;
     private Calendar myCalendar;
     private DatePickerDialog.OnDateSetListener date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_person);
+        setContentView(R.layout.activity_edit_person);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        Intent intent = getIntent();
-        String contactName = intent.getStringExtra("contactName");
-
-        mPersonNameInput = findViewById(R.id.input_person_name);
-
-        if (intent.hasExtra("contactName")){
-
-            getSupportActionBar().setTitle(contactName);
-            mPersonNameInput.setText(contactName);
-
-        }
-
+        getSupportActionBar().setTitle(getIntent().getStringExtra("personName"));
 
         mAuth = FirebaseAuth.getInstance();
         mPersonListRef = FirebaseDatabase.getInstance().getReference().child("PeopleList")
-                .child(mAuth.getCurrentUser().getUid());
+                .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"));
         mPersonListRef.keepSynced(true);
 
-        mAddingPD = new ProgressDialog(this);
-        mAddingPD.setTitle("Adding Person");
-        mAddingPD.setMessage("Processing...");
-        mAddingPD.setCancelable(false);
+        mUpdatingPD = new ProgressDialog(this);
+        mUpdatingPD.setTitle("Updating Person");
+        mUpdatingPD.setMessage("Processing...");
+        mUpdatingPD.setCancelable(false);
 
-        mDeadlineTv = findViewById(R.id.tv_deadline);
-        mPickDateIv = findViewById(R.id.iv_pick_date);
+        mPersonNameInput = findViewById(R.id.input_edit_person_name);
+        mPersonNameInput.setText(getIntent().getStringExtra("personName"));
+
+        mDeadlineTv = findViewById(R.id.tv_edit_deadline);
+        mPickDateIv = findViewById(R.id.iv_edit_pick_date);
 
         myCalendar = Calendar.getInstance();
 
@@ -97,7 +88,7 @@ public class AddPersonActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                new DatePickerDialog(AddPersonActivity.this, date, myCalendar
+                new DatePickerDialog(EditPersonActivity.this, date, myCalendar
                         .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
                         myCalendar.get(Calendar.DAY_OF_MONTH)).show();
 
@@ -108,19 +99,18 @@ public class AddPersonActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                new DatePickerDialog(AddPersonActivity.this, date, myCalendar
+                new DatePickerDialog(EditPersonActivity.this, date, myCalendar
                         .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
                         myCalendar.get(Calendar.DAY_OF_MONTH)).show();
 
             }
         });
 
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void updateLabel() {
-        String myFormat = "MM/dd/yy"; //In which you need put here
+        String myFormat = "MMM/dd/yyyy"; //In which you need put here
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
 
         mDeadlineTv.setText(sdf.format(myCalendar.getTime()));
@@ -144,7 +134,7 @@ public class AddPersonActivity extends AppCompatActivity {
 
         if (id == R.id.action_save_person) {
 
-            savePerson();
+            updatePerson();
 
             return true;
         }
@@ -154,7 +144,7 @@ public class AddPersonActivity extends AppCompatActivity {
 
 
 
-    private void savePerson(){
+    private void updatePerson(){
 
         String name = mPersonNameInput.getText().toString().trim();
         String deadline = mDeadlineTv.getText().toString().trim();
@@ -174,30 +164,32 @@ public class AddPersonActivity extends AppCompatActivity {
 
         if (!TextUtils.isEmpty(name)  && !TextUtils.isEmpty(deadline) ){
 
-            mAddingPD.show();
+            mUpdatingPD.show();
 
             Map personMap = new HashMap();
             personMap.put("personName", name);
             personMap.put("deadline", deadline);
 
-            mPersonListRef.push().setValue(personMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            mPersonListRef.setValue(personMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
 
                     if (task.isSuccessful()){
 
-                        mAddingPD.dismiss();
+                        mUpdatingPD.dismiss();
 
-                        Intent mainIntent = new Intent(AddPersonActivity.this, MainActivity.class);
+                        Intent mainIntent = new Intent(EditPersonActivity.this, MainActivity.class);
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(mainIntent);
                         finish();
 
+                        Toast.makeText(EditPersonActivity.this, "Updated Successfully", Toast.LENGTH_LONG).show();
+
                     } else {
 
-                        mAddingPD.dismiss();
+                        mUpdatingPD.dismiss();
 
-                        Toast.makeText(AddPersonActivity.this, "Failed to add person. Please try again", Toast.LENGTH_LONG).show();
+                        Toast.makeText(EditPersonActivity.this, "Failed to save changes. Please try again", Toast.LENGTH_LONG).show();
 
                     }
 
@@ -207,4 +199,5 @@ public class AddPersonActivity extends AppCompatActivity {
         }
 
     }
+
 }

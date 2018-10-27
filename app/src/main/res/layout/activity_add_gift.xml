@@ -4,12 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AddPersonActivity"
+    tools:context=".AddGiftActivity"
     android:background="@drawable/xmas_five"
     android:paddingHorizontal="12dp"
     android:paddingTop="10dp">
 
     <LinearLayout
+        android:id="@+id/sec_one"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorTransparentBlack"
@@ -26,7 +27,7 @@
             android:textSize="16sp"/>
 
         <EditText
-            android:id="@+id/input_person_name"
+            android:id="@+id/input_gift_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
@@ -36,34 +37,70 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
-            android:text="Deadline"
+            android:text="Price"
             android:textSize="16sp"/>
+
+        <EditText
+            android:id="@+id/input_gift_price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textColorHint="@android:color/white"
+            android:inputType="numberDecimal"/>
+
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/tv_deadline"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white"
-                android:text="Dec 25 2018"
+                android:text="Bought"
                 android:textSize="16sp"
-                android:layout_marginTop="12dp"
-                android:layout_marginLeft="12dp"/>
+                android:layout_toLeftOf="@+id/switch_bought"/>
 
-            <ImageView
-                android:id="@+id/iv_pick_date"
+            <Switch
+                android:id="@+id/switch_bought"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/baseline_date_range_white_24dp"
-                android:layout_toRightOf="@+id/tv_deadline"
-                android:layout_marginLeft="25dp"/>
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="16dp"
+                android:checked="false"/>
 
         </RelativeLayout>
 
 
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorTransparentBlack"
+        android:orientation="vertical"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="20dp"
+        android:layout_below="@+id/sec_one"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:text="Description (Optional)"
+            android:textSize="16sp"/>
+
+        <EditText
+            android:id="@+id/input_gift_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textColorHint="@android:color/white"
+            android:inputType="text|textAutoComplete"/>
+
+    </LinearLayout>
+
 
 </RelativeLayout>

@@ -4,50 +4,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/headerView"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/nav_header_height"
-    android:background="@drawable/side_nav_bar"
+    android:layout_height="250dp"
+    android:background="@drawable/xmas_side_two"
     android:gravity="bottom"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:background="#82000000"
+        android:layout_gravity="center">
 
-        <ImageView
-            android:id="@+id/iv_profile_pic"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:contentDescription="@string/nav_header_desc"
-            android:paddingTop="@dimen/nav_header_vertical_spacing"
-            app:srcCompat="@drawable/ic_profile_place_holder2" />
+
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_gravity="center_vertical">
+            android:layout_gravity="center">
 
             <TextView
-            android:id="@+id/tv_nav_user_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-            tools:text="John Doe"/>
-
-            <TextView
-                android:id="@+id/tv_nav_phone_number"
+                android:id="@+id/tv_nav_user_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                tools:text="+254719327570"/>
+                android:textSize="24dp"
+                android:textColor="@android:color/white"
+                android:text="Christmas Gifts List"
+                android:layout_gravity="center"/>
+
 
         </LinearLayout>
 
