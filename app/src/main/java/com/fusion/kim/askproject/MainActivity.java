@@ -105,13 +105,6 @@ public class MainActivity extends AppCompatActivity
 
         mItemsCoutnLayout = findViewById(R.id.layout_items_count);
 
-        NavigationView navView = findViewById(R.id.nav_view);
-        View headerView = navView.inflateHeaderView(R.layout.nav_header_main);
-        TextView userNameTv = headerView.findViewById(R.id.tv_nav_user_name);
-        TextView userEmailTv = headerView.findViewById(R.id.tv_user_email);
-        TextView appNameTv = headerView.findViewById(R.id.tv_project_name);
-        appNameTv.setText("Christmas Gift List");
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
