@@ -16,8 +16,7 @@
         android:textSize="16sp"
         tools:text="Shoes"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="8dp"
-        android:layout_toRightOf="@+id/tv_group_letter"/>
+        android:layout_marginLeft="8dp"/>
 
     <ImageView
         android:id="@+id/iv_gift_gift_icon"
@@ -27,6 +26,6 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginRight="10dp"
-        android:src="@drawable/gift"/>
+        android:src="@drawable/gift_grey"/>
 
 </RelativeLayout>

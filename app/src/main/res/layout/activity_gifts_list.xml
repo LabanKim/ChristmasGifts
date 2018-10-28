@@ -46,7 +46,7 @@
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textColor="@android:color/white"
-            android:text="Total Cost: Ksh 3000"/>
+            tools:text="Total Cost: 0$"/>
 
         <TextView
             android:id="@+id/tv_total_bought"
@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textColor="@android:color/white"
-            android:text="Bought: 1/3"
+            tools:text="Bought: 1/3"
             android:layout_alignParentRight="true" />
 
         <View

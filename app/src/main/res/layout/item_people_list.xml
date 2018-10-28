@@ -7,11 +7,11 @@
     android:layout_marginBottom="5dp">
 
     <TextView
-        android:id="@+id/tv_group_letter"
+        android:id="@+id/tv_name_initial"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@android:color/white"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:background="@drawable/red_circle"
         tools:text="L"
         android:paddingHorizontal="20dp"
@@ -28,7 +28,7 @@
         tools:text="Laban"
         android:layout_centerVertical="true"
         android:layout_marginLeft="8dp"
-        android:layout_toRightOf="@+id/tv_group_letter"/>
+        android:layout_toRightOf="@+id/tv_name_initial"/>
 
     <ImageView
         android:id="@+id/iv_gift_icon"
@@ -38,6 +38,6 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginRight="10dp"
-        android:src="@drawable/gift"/>
+        android:src="@drawable/gift_grey"/>
 
 </RelativeLayout>

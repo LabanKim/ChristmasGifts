@@ -53,6 +53,15 @@ public class LoginActivity extends AppCompatActivity {
         mForgotPassTv = findViewById(R.id.tv_forgot_password);
         mSignUpTv = findViewById(R.id.tv_sign_up);
 
+        mForgotPassTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                startActivity(new Intent(LoginActivity.this, ResetPasswordActivity.class));
+
+            }
+        });
+
 
         mLoginPD = new ProgressDialog(this);
         mLoginPD.setTitle("Signing In");

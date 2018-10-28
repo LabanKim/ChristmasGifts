@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".AddGiftActivity"
     android:background="@drawable/xmas_five"
-    android:paddingHorizontal="12dp"
+    android:paddingHorizontal="8dp"
     android:paddingTop="10dp">
 
     <LinearLayout
@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
-            android:text="Price"
+            android:text="Price ($)"
             android:textSize="16sp"/>
 
         <EditText
@@ -75,6 +75,41 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/sec_two"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorTransparentBlack"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="20dp"
+        android:layout_below="@+id/sec_one"
+        android:layout_marginTop="16dp"
+        android:gravity="center">
+
+        <ImageView
+            android:id="@+id/image_one"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/placeholder_image_logo"
+            android:layout_marginRight="8dp"/>
+
+        <ImageView
+            android:id="@+id/image_two"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/placeholder_image_logo"
+            android:layout_marginRight="8dp"/>
+
+        <ImageView
+            android:id="@+id/image_three"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/placeholder_image_logo"/>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorTransparentBlack"
@@ -82,7 +117,7 @@
         android:paddingHorizontal="8dp"
         android:paddingTop="18dp"
         android:paddingBottom="20dp"
-        android:layout_below="@+id/sec_one"
+        android:layout_below="@+id/sec_two"
         android:layout_marginTop="16dp">
 
         <TextView

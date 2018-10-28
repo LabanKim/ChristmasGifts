@@ -37,7 +37,6 @@ public class ViewGiftActivity extends AppCompatActivity {
         setContentView(R.layout.activity_view_gift);
 
         Bundle data = getIntent().getExtras();
-        String personName = data.getString("personName");
         String giftName = data.getString("giftName");
         String description = data.getString("description");
         double giftPrice = data.getDouble("giftPrice");
@@ -45,7 +44,6 @@ public class ViewGiftActivity extends AppCompatActivity {
         String giftKey = data.getString("giftKey");
 
         getSupportActionBar().setTitle(giftName);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mAuth = FirebaseAuth.getInstance();
         mGiftsRef = FirebaseDatabase.getInstance().getReference().child("GiftsList")
@@ -107,7 +105,7 @@ public class ViewGiftActivity extends AppCompatActivity {
         String priceString = mPriceInput.getText().toString().trim();
         String desc = mDescInput.getText().toString();
 
-        Boolean boughtState = mBoughtSwitch.isChecked();
+        final Boolean boughtState = mBoughtSwitch.isChecked();
 
         if (TextUtils.isEmpty(giftName)){
             mGifNameInput.setError("Kindly enter gift name");
@@ -136,16 +134,32 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                     if (task.isSuccessful()){
 
-                        mUpdatingPD.dismiss();
+                        FirebaseDatabase.getInstance().getReference().child("PeopleList")
+                                .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"))
+                                .child("bought").setValue(boughtState).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
 
-                        Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
-                        mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
-                        mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
-                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(mainIntent);
-                        finish();
+                                if (task.isSuccessful()){
 
-                        Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
+                                    mUpdatingPD.dismiss();
+
+                                    Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
+                                    mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                                    mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                                    startActivity(mainIntent);
+                                    finish();
+
+                                    Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
+
+                                } else {
+
+                                    Toast.makeText(ViewGiftActivity.this, "Failed to update gift. Try Again", Toast.LENGTH_LONG).show();
+
+                                }
+
+                            }
+                        });
 
                     } else {
                         mUpdatingPD.dismiss();
@@ -159,5 +173,20 @@ public class ViewGiftActivity extends AppCompatActivity {
         }
 
     }
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        Intent backIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
+        backIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+        backIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+        startActivity(backIntent);
+        finish();
+
+    }
+
+
 
 }

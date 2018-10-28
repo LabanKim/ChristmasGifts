@@ -179,6 +179,7 @@ public class AddPersonActivity extends AppCompatActivity {
             Map personMap = new HashMap();
             personMap.put("personName", name);
             personMap.put("deadline", deadline);
+            personMap.put("bought", false);
 
             mPersonListRef.push().setValue(personMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override

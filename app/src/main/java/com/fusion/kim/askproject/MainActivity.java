@@ -1,6 +1,7 @@
 package com.fusion.kim.askproject;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -32,6 +33,8 @@ import android.widget.Toast;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.fusion.kim.askproject.Models.Person;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -45,7 +48,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private RecyclerView mPeopleRv;
-    private TextView mNoItemsTv;
+    private TextView mNoItemsTv, mGeneralTotalCostTv, mGeneralBoughtTv;
     private RelativeLayout mItemsCoutnLayout;
 
     private ProgressBar mLoadingPeoplePb;
@@ -59,6 +62,12 @@ public class MainActivity extends AppCompatActivity
     private Uri uriContact;
     private String contactID;
 
+
+    private  double mTotalCost = 0;
+    private int totalPeople = 0, boughtItems = 0;
+
+    private Query query;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +76,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         mAuth = FirebaseAuth.getInstance();
+
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -83,7 +93,7 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        if (mAuth.getCurrentUser() == null){
+        if (FirebaseAuth.getInstance().getCurrentUser() == null){
 
             Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
             loginIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -92,9 +102,7 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        mPeopleListRef = FirebaseDatabase.getInstance().getReference().child("PeopleList")
-                .child(mAuth.getCurrentUser().getUid());
-        mPeopleListRef.keepSynced(true);
+        mPeopleListRef = FirebaseDatabase.getInstance().getReference();
 
         mPeopleRv = findViewById(R.id.rv_people_list);
         mPeopleRv.setLayoutManager(new LinearLayoutManager(this));
@@ -103,7 +111,10 @@ public class MainActivity extends AppCompatActivity
         mLoadingPeoplePb = findViewById(R.id.pb_loading_people);
         mNoItemsTv = findViewById(R.id.tv_main_error);
 
-        mItemsCoutnLayout = findViewById(R.id.layout_items_count);
+        mGeneralTotalCostTv = findViewById(R.id.tv_total_general_cost);
+        mGeneralBoughtTv = findViewById(R.id.tv_total_general_bought);
+
+        mItemsCoutnLayout = findViewById(R.id.layout_general_items_count);
 
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -123,9 +134,13 @@ public class MainActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
+        mTotalCost = 0;
+
         mAuth.addAuthStateListener(mAuthListener);
 
-        mPeopleListRef.addValueEventListener(new ValueEventListener() {
+        mPeopleListRef.child("PeopleList")
+                .child(mAuth.getCurrentUser().getUid())
+                .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -134,10 +149,14 @@ public class MainActivity extends AppCompatActivity
                     mNoItemsTv.setVisibility(View.VISIBLE);
                     mItemsCoutnLayout.setVisibility(View.GONE);
 
+
                 } else {
 
                     mNoItemsTv.setVisibility(View.GONE);
                     mItemsCoutnLayout.setVisibility(View.VISIBLE);
+
+                    mGeneralTotalCostTv.setText("Total Cost: " + mTotalCost + "$");
+                    mGeneralBoughtTv.setText("Bought: " + boughtItems + "/" + (int) dataSnapshot.getChildrenCount());
 
                 }
 
@@ -149,7 +168,10 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        Query query = mPeopleListRef.limitToLast(50);
+
+
+        query = mPeopleListRef.child("PeopleList")
+                .child(mAuth.getCurrentUser().getUid()).orderByChild("personName").limitToLast(50);
 
         FirebaseRecyclerOptions<Person> options =
                 new FirebaseRecyclerOptions.Builder<Person>()
@@ -162,6 +184,17 @@ public class MainActivity extends AppCompatActivity
             protected void onBindViewHolder(@NonNull PeopleViewHolder holder, final int position, @NonNull final Person model) {
 
                 holder.mNameTv.setText(model.getPersonName());
+                holder.mInitialTv.setText(String.valueOf(model.getPersonName().charAt(0)));
+
+                if (model.isBought()){
+
+                    holder.mGiftIv.setImageResource(R.drawable.gift);
+
+                } else {
+
+                    holder.mGiftIv.setImageResource(R.drawable.gift_grey);
+
+                }
 
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -191,7 +224,33 @@ public class MainActivity extends AppCompatActivity
 
                                         if (options[which].equals(options[1])){
 
+                                            final ProgressDialog progress = new ProgressDialog(MainActivity.this);
+                                            progress.setMessage("Removing...");
+                                            progress.setCancelable(false);
 
+                                            progress.show();
+
+                                            mPeopleListRef.child(getRef(position).getKey())
+                                                    .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+
+                                                    if (task.isSuccessful()){
+
+                                                        progress.dismiss();
+
+                                                        Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
+
+                                                    } else {
+
+                                                        progress.dismiss();
+
+                                                        Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
+
+                                                    }
+
+                                                }
+                                            });
 
                                         } else if (options[which].equals(options[0])){
 
@@ -258,6 +317,14 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
 
+        if (id == R.id.action_sort_list) {
+
+            showShortDialog();
+
+
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -270,6 +337,12 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_logout) {
 
             mAuth.signOut();
+
+        }
+
+        if (id == R.id.nav_about) {
+
+            startActivity(new Intent(MainActivity.this, AboutActivity.class));
 
         }
 
@@ -306,6 +379,35 @@ public class MainActivity extends AppCompatActivity
 
             }
         }).show();
+
+
+    }
+
+    private void showShortDialog(){
+
+        final String [] options = {"Name", "Not Bought"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        // Get the layout inflater
+        builder.setTitle("Order")
+                .setItems(options, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // The 'which' argument contains the index position
+                        // of the selected item
+
+                        if (options[which].equals(options[1])){
+
+
+
+                        } else if (options[which].equals(options[0])){
+
+
+
+                        }
+
+
+                    }
+                }).show();
 
 
     }
@@ -361,7 +463,7 @@ public class MainActivity extends AppCompatActivity
     private class PeopleViewHolder extends RecyclerView.ViewHolder{
 
         private View mView;
-        private TextView mNameTv;
+        private TextView mNameTv, mInitialTv;
         private ImageView mGiftIv;
 
         public PeopleViewHolder(View itemView) {
@@ -370,6 +472,7 @@ public class MainActivity extends AppCompatActivity
             mView = itemView;
             mNameTv = itemView.findViewById(R.id.tv_person_name);
             mGiftIv = itemView.findViewById(R.id.iv_gift_icon);
+            mInitialTv = itemView.findViewById(R.id.tv_name_initial);
 
         }
     }
