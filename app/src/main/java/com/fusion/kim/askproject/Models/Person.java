@@ -4,14 +4,16 @@ public class Person {
 
     private String personName, deadline;
     private boolean bought;
+    private double totalAmount;
 
     public Person() {
     }
 
-    public Person(String personName, String deadline, boolean bought) {
+    public Person(String personName, String deadline, boolean bought, double totalAmount) {
         this.personName = personName;
         this.deadline = deadline;
         this.bought = bought;
+        this.totalAmount = totalAmount;
     }
 
     public String getPersonName() {
@@ -36,5 +38,13 @@ public class Person {
 
     public void setBought(boolean bought) {
         this.bought = bought;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 }

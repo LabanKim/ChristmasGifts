@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,7 +42,8 @@ public class GiftsListActivity extends AppCompatActivity {
     private DatabaseReference mGiftListRef;
     private FirebaseAuth mAuth;
 
-    public static int sBought = 0, sTotal = 0;
+    private ProgressBar mGiftsProgress;
+
     private double mTotalCost = 0;
 
     private String personID = "";
@@ -59,8 +61,10 @@ public class GiftsListActivity extends AppCompatActivity {
         mGiftListRv = findViewById(R.id.rv_gifts_list);
         mNoGiftsTv = findViewById(R.id.tv_no_gifts_error);
         mTotalGiftsCountLayout = findViewById(R.id.layout_gifts_items_count);
-        mTotalCostTv = findViewById(R.id.tv_total_cost);
-        mTotalBoughtTv = findViewById(R.id.tv_total_bought);
+        mTotalCostTv = findViewById(R.id.tv_total_gifts_spent);
+        mTotalBoughtTv = findViewById(R.id.tv_total_gifts_bought);
+
+        mGiftsProgress = findViewById(R.id.pb_gifts_bought_progress);
 
         mGiftListRv.setLayoutManager(new LinearLayoutManager(this));
         mGiftListRv.setHasFixedSize(true);
@@ -77,9 +81,6 @@ public class GiftsListActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        sBought = 0;
-        sTotal = 0;
-        mTotalCost = 0;
 
         mGiftListRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -92,12 +93,28 @@ public class GiftsListActivity extends AppCompatActivity {
 
                 } else {
 
-                    sTotal = (int) dataSnapshot.getChildrenCount();
+                    int totalCount = (int) dataSnapshot.getChildrenCount();
+
+                    int boughtItems = 0;
+
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Gift gift = snapshot.getValue(Gift.class);
+
+                        if (gift.isBought()){
+
+                            mTotalCost += gift.getGiftPrice();
+                            boughtItems += 1;
+
+                        }
+                    }
 
                     mNoGiftsTv.setVisibility(View.GONE);
                     mTotalGiftsCountLayout.setVisibility(View.VISIBLE);
-                    mTotalBoughtTv.setText("Bought: " + sBought + "/" + sTotal);
+                    mTotalBoughtTv.setText("Bought: " + boughtItems + "/" + totalCount);
                     mTotalCostTv.setText("Total Cost: "+ mTotalCost + "$");
+
+                    mTotalCostTv.setText("$" + mTotalCost);
+                    mTotalBoughtTv.setText(boughtItems + "/" + totalCount + " gifts bought");
 
                 }
 
@@ -124,9 +141,6 @@ public class GiftsListActivity extends AppCompatActivity {
                 holder.mGiftNameTv.setText(model.getGiftName());
 
                 if (model.isBought()){
-
-                    sBought += 1;
-                    mTotalCost += model.getGiftPrice();
 
                     holder.mGiftIv.setImageResource(R.drawable.gift);
 

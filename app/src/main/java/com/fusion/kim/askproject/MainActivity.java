@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity
     private TextView mNoItemsTv, mGeneralTotalCostTv, mGeneralBoughtTv;
     private RelativeLayout mItemsCoutnLayout;
 
-    private ProgressBar mLoadingPeoplePb;
+    private ProgressBar mLoadingPeoplePb, mBuyingProcess;
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -62,9 +63,10 @@ public class MainActivity extends AppCompatActivity
     private Uri uriContact;
     private String contactID;
 
+    private SharedPreferences mQuerySp;
+
 
     private  double mTotalCost = 0;
-    private int totalPeople = 0, boughtItems = 0;
 
     private Query query;
 
@@ -75,6 +77,9 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mQuerySp = getSharedPreferences("queryPreference",MODE_PRIVATE);
+
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -110,10 +115,12 @@ public class MainActivity extends AppCompatActivity
         mPeopleRv.setHasFixedSize(true);
 
         mLoadingPeoplePb = findViewById(R.id.pb_loading_people);
+        mLoadingPeoplePb.setVisibility(View.VISIBLE);
         mNoItemsTv = findViewById(R.id.tv_main_error);
+        mBuyingProcess = findViewById(R.id.pb_bought_progress);
 
-        mGeneralTotalCostTv = findViewById(R.id.tv_total_general_cost);
         mGeneralBoughtTv = findViewById(R.id.tv_total_general_bought);
+        mGeneralTotalCostTv = findViewById(R.id.tv_total_spent);
 
         mItemsCoutnLayout = findViewById(R.id.layout_general_items_count);
 
@@ -151,15 +158,43 @@ public class MainActivity extends AppCompatActivity
                     mItemsCoutnLayout.setVisibility(View.GONE);
 
 
+
                 } else {
 
                     mNoItemsTv.setVisibility(View.GONE);
                     mItemsCoutnLayout.setVisibility(View.VISIBLE);
 
-                    mGeneralTotalCostTv.setText("Total Cost: " + mTotalCost + "$");
-                    mGeneralBoughtTv.setText("Bought: " + boughtItems + "/" + (int) dataSnapshot.getChildrenCount());
+                    int boughtItems = 0;
+
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Person person = snapshot.getValue(Person.class);
+
+                        mTotalCost += person.getTotalAmount();
+
+                        if (person.isBought()){
+
+                            boughtItems += 1;
+
+                        }
+                    }
+
+                    mGeneralTotalCostTv.setText("$" + mTotalCost);
+                    mGeneralBoughtTv.setText(boughtItems + "/" + (int) dataSnapshot.getChildrenCount() + " gifts bought");
+
+                    int progress = (boughtItems / (int) dataSnapshot.getChildrenCount()) * 100;
+
+                    if (progress > 90){
+
+                        mBuyingProcess.setProgress(progress);
+                        mBuyingProcess.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                    } else {
+                        mBuyingProcess.setProgress(progress);
+                        mBuyingProcess.setBackgroundColor(getResources().getColor(R.color.colorProgressGreen));
+                    }
 
                 }
+
+                mLoadingPeoplePb.setVisibility(View.GONE);
 
             }
 
@@ -170,9 +205,23 @@ public class MainActivity extends AppCompatActivity
         });
 
 
+        if (mQuerySp.getString("sort", "").equals("name") ){
 
-        query = mPeopleListRef.child("PeopleList")
-                .child(mAuth.getCurrentUser().getUid()).orderByChild("personName").limitToLast(50);
+            query = mPeopleListRef.child("PeopleList")
+                    .child(mAuth.getCurrentUser().getUid()).orderByChild("personName").limitToLast(50);
+
+        } else if (mQuerySp.getString("sort", "").equals("notBought")){
+
+            query = mPeopleListRef.child("PeopleList")
+                    .child(mAuth.getCurrentUser().getUid()).orderByChild("bought").limitToLast(50);
+
+        } else {
+
+            query = mPeopleListRef.child("PeopleList")
+                    .child(mAuth.getCurrentUser().getUid()).orderByChild("name").limitToLast(50);
+
+        }
+
 
         FirebaseRecyclerOptions<Person> options =
                 new FirebaseRecyclerOptions.Builder<Person>()
@@ -398,13 +447,17 @@ public class MainActivity extends AppCompatActivity
                         // The 'which' argument contains the index position
                         // of the selected item
 
-                        if (options[which].equals(options[1])){
+                        if (options[which].equals(options[0])){
 
+                            mQuerySp.edit().putString("sort", "name").apply();
+                            finish();
+                            startActivity(getIntent());
 
+                        } else if (options[which].equals(options[1])){
 
-                        } else if (options[which].equals(options[0])){
-
-
+                            mQuerySp.edit().putString("sort", "notBought").apply();
+                            finish();
+                            startActivity(getIntent());
 
                         }
 

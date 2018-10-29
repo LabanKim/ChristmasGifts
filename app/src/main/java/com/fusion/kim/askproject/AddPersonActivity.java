@@ -155,6 +155,7 @@ public class AddPersonActivity extends AppCompatActivity {
             personMap.put("personName", name);
             personMap.put("deadline", deadline);
             personMap.put("bought", false);
+            personMap.put("totalAmount", 0);
 
             mPersonListRef.push().setValue(personMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override

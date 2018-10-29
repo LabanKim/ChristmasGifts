@@ -23,9 +23,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -48,7 +50,7 @@ public class AddGiftActivity extends AppCompatActivity {
     private Bitmap mCompressedImageBitmap;
     private Uri mResultUri = null;
 
-    private StorageReference mIconsStorage, mBitmapsStorage;
+    private StorageReference mImagesStorage, mBitmapsStorage;
 
     private String mBitmapDownloadUrl = null;
 
@@ -66,7 +68,7 @@ public class AddGiftActivity extends AppCompatActivity {
                 .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"));
         mGiftsRef.keepSynced(true);
 
-        mIconsStorage = FirebaseStorage.getInstance().getReference().child("GiftImages").child("Images");
+        mImagesStorage = FirebaseStorage.getInstance().getReference().child("GiftImages").child("Images");
         mBitmapsStorage = FirebaseStorage.getInstance().getReference().child("GiftImages").child("Bitmaps");
 
         mGifNameInput = findViewById(R.id.input_gift_name);
@@ -139,33 +141,38 @@ public class AddGiftActivity extends AppCompatActivity {
 
     private void saveGift() {
 
-        String giftName = mGifNameInput.getText().toString().trim();
-        String priceString = mPriceInput.getText().toString().trim();
-        String desc = mDescInput.getText().toString();
+        final String giftName = mGifNameInput.getText().toString().trim();
+        final String priceString = mPriceInput.getText().toString().trim();
+        final String desc = mDescInput.getText().toString();
 
-        Boolean boughtState = mBoughtSwitch.isChecked();
+        final Boolean boughtState = mBoughtSwitch.isChecked();
 
-        if (TextUtils.isEmpty(giftName)){
+        if (TextUtils.isEmpty(giftName)) {
             mGifNameInput.setError("Kindly enter gift name");
             return;
         }
 
-        if (TextUtils.isEmpty(priceString)){
+        if (TextUtils.isEmpty(priceString)) {
             mPriceInput.setError("Kindly enter the price");
             return;
         }
 
-        if (!TextUtils.isEmpty(giftName) && !TextUtils.isEmpty(priceString)){
+        if (!TextUtils.isEmpty(giftName) && !TextUtils.isEmpty(priceString)) {
 
             mAddingPD.show();
 
-            Map giftMap = new HashMap();
+            final String giftKey = mGiftsRef.push().getKey().toString().trim();
+
+            final Map giftMap = new HashMap();
             giftMap.put("giftName", giftName);
             giftMap.put("giftPrice", Double.parseDouble(priceString));
             giftMap.put("description", desc);
             giftMap.put("bought", boughtState);
+            giftMap.put("totalAmount", 0);
+            giftMap.put("imageUrl", "default");
+            giftMap.put("bitmapUrl", "default");
 
-            mGiftsRef.push().setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            mGiftsRef.child(giftKey).setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
 
@@ -176,7 +183,6 @@ public class AddGiftActivity extends AppCompatActivity {
                         Intent mainIntent = new Intent(AddGiftActivity.this, GiftsListActivity.class);
                         mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                         mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
-                        //mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(mainIntent);
                         finish();
 
@@ -192,6 +198,7 @@ public class AddGiftActivity extends AppCompatActivity {
         }
 
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
