@@ -2,13 +2,17 @@ package com.fusion.kim.askproject;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -17,9 +21,17 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import id.zelory.compressor.Compressor;
 
 public class AddGiftActivity extends AppCompatActivity {
 
@@ -30,6 +42,15 @@ public class AddGiftActivity extends AppCompatActivity {
     private Switch mBoughtSwitch;
 
     private ProgressDialog mAddingPD;
+
+    private ImageView mImageOneIv, mImageTwoIv, mImageThreeIv;
+
+    private Bitmap mCompressedImageBitmap;
+    private Uri mResultUri = null;
+
+    private StorageReference mIconsStorage, mBitmapsStorage;
+
+    private String mBitmapDownloadUrl = null;
 
 
     @Override
@@ -45,15 +66,49 @@ public class AddGiftActivity extends AppCompatActivity {
                 .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"));
         mGiftsRef.keepSynced(true);
 
+        mIconsStorage = FirebaseStorage.getInstance().getReference().child("GiftImages").child("Images");
+        mBitmapsStorage = FirebaseStorage.getInstance().getReference().child("GiftImages").child("Bitmaps");
+
         mGifNameInput = findViewById(R.id.input_gift_name);
         mPriceInput = findViewById(R.id.input_gift_price);
         mDescInput = findViewById(R.id.input_gift_desc);
         mBoughtSwitch = findViewById(R.id.switch_bought);
 
+        mImageOneIv = findViewById(R.id.image_one);
+        mImageTwoIv = findViewById(R.id.image_two);
+        mImageThreeIv = findViewById(R.id.image_three);
+
         mAddingPD = new ProgressDialog(this);
         mAddingPD.setTitle("Adding Gift");
         mAddingPD.setMessage("Processing...");
         mAddingPD.setCancelable(false);
+
+        mImageOneIv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                CropImage.activity()
+                        .setAspectRatio(1,1)
+                        .setGuidelines(CropImageView.Guidelines.ON)
+                        .start(AddGiftActivity.this);
+
+            }
+        });
+
+
+        mImageTwoIv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        mImageThreeIv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
 
     }
 
@@ -137,4 +192,39 @@ public class AddGiftActivity extends AppCompatActivity {
         }
 
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+
+            if (resultCode == RESULT_OK) {
+                mResultUri = result.getUri();
+
+                File thumbPath = new File(mResultUri.getPath());
+
+                try {
+                    mCompressedImageBitmap = new Compressor(AddGiftActivity.this)
+                            .setMaxWidth(200)
+                            .setMaxHeight(200)
+                            .setQuality(75)
+                            .compressToBitmap(thumbPath);
+
+                    mImageOneIv.setImageBitmap(mCompressedImageBitmap);
+                    mImageTwoIv.setImageBitmap(mCompressedImageBitmap);
+                    mImageThreeIv.setImageBitmap(mCompressedImageBitmap);
+                } catch (IOException e) {
+
+                    e.printStackTrace();
+
+                }
+
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+
+                Exception error = result.getError();
+            }
+        }
+    }
+
 }

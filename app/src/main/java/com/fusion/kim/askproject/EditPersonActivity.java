@@ -40,8 +40,8 @@ public class EditPersonActivity extends AppCompatActivity {
     private ImageView mPickDateIv;
 
     private ProgressDialog mUpdatingPD;
-    private Calendar myCalendar;
-    private DatePickerDialog.OnDateSetListener date;
+
+    private Calendar mDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,30 +67,14 @@ public class EditPersonActivity extends AppCompatActivity {
         mDeadlineTv = findViewById(R.id.tv_edit_deadline);
         mPickDateIv = findViewById(R.id.iv_edit_pick_date);
 
-        myCalendar = Calendar.getInstance();
+        mDeadlineTv.setText(getIntent().getStringExtra("deadline"));
 
-        date = new DatePickerDialog.OnDateSetListener() {
-
-            @RequiresApi(api = Build.VERSION_CODES.N)
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear,
-                                  int dayOfMonth) {
-
-                myCalendar.set(Calendar.YEAR, year);
-                myCalendar.set(Calendar.MONTH, monthOfYear);
-                myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                updateLabel();
-            }
-
-        };
 
         mDeadlineTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                new DatePickerDialog(EditPersonActivity.this, date, myCalendar
-                        .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
-                        myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+                showDatePicker();
 
             }
         });
@@ -99,21 +83,11 @@ public class EditPersonActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                new DatePickerDialog(EditPersonActivity.this, date, myCalendar
-                        .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
-                        myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+                showDatePicker();
 
             }
         });
 
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private void updateLabel() {
-        String myFormat = "MMM/dd/yyyy"; //In which you need put here
-        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
-
-        mDeadlineTv.setText(sdf.format(myCalendar.getTime()));
     }
 
     @Override
@@ -198,6 +172,46 @@ public class EditPersonActivity extends AppCompatActivity {
 
         }
 
+    }
+
+    public void showDatePicker() {
+        final Calendar currentDate = Calendar.getInstance();
+        mDate = Calendar.getInstance();
+        new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                mDate.set(year, monthOfYear, dayOfMonth);
+
+                String day = "";
+                String month = "";
+
+                int monthNew = monthOfYear + 1;
+
+                if (dayOfMonth < 10){
+
+                    day = "0"+dayOfMonth;
+
+                } else {
+
+                    day = ""+dayOfMonth;
+
+                }
+
+                if (monthNew < 10){
+
+                    month = "0"+monthNew;
+
+                } else {
+
+                    month = ""+monthNew;
+
+                }
+
+                mDeadlineTv.setText(year + "-" + month + "-" + day);
+
+
+            }
+        }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE)).show();
     }
 
 }

@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity
 
     private Query query;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -186,6 +187,7 @@ public class MainActivity extends AppCompatActivity
                 holder.mNameTv.setText(model.getPersonName());
                 holder.mInitialTv.setText(String.valueOf(model.getPersonName().charAt(0)));
 
+
                 if (model.isBought()){
 
                     holder.mGiftIv.setImageResource(R.drawable.gift);
@@ -257,6 +259,7 @@ public class MainActivity extends AppCompatActivity
                                             Intent editIntent = new Intent(MainActivity.this, EditPersonActivity.class);
                                             editIntent.putExtra("personName", model.getPersonName());
                                             editIntent.putExtra("personID", getRef(position).getKey());
+                                            editIntent.putExtra("deadline", model.getDeadline());
                                             startActivity(editIntent);
 
                                         }
