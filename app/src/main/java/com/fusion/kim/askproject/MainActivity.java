@@ -186,10 +186,10 @@ public class MainActivity extends AppCompatActivity
                     if (progress > 90){
 
                         mBuyingProcess.setProgress(progress);
-                        mBuyingProcess.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                        mBuyingProcess.setBackgroundColor(getResources().getColor(R.color.colorProgressGreen));
                     } else {
                         mBuyingProcess.setProgress(progress);
-                        mBuyingProcess.setBackgroundColor(getResources().getColor(R.color.colorProgressGreen));
+                        mBuyingProcess.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
                     }
 
                 }
@@ -281,27 +281,45 @@ public class MainActivity extends AppCompatActivity
 
                                             progress.show();
 
-                                            mPeopleListRef.child(getRef(position).getKey())
-                                                    .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                                                    .child(getRef(position).getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
 
                                                     if (task.isSuccessful()){
 
-                                                        progress.dismiss();
+                                                        mPeopleListRef.child("PeopleList").child(mAuth.getCurrentUser().getUid())
+                                                                .child(getRef(position).getKey())
+                                                                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            @Override
+                                                            public void onComplete(@NonNull Task<Void> task) {
 
-                                                        Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
+                                                                if (task.isSuccessful()){
+
+                                                                    progress.dismiss();
+
+                                                                    Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
+
+                                                                } else {
+
+                                                                    progress.dismiss();
+
+                                                                    Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
+
+                                                                }
+
+                                                            }
+                                                        });
 
                                                     } else {
 
-                                                        progress.dismiss();
-
-                                                        Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
+                                                        Toast.makeText(MainActivity.this, "Failed to remove person's gifts", Toast.LENGTH_LONG).show();
 
                                                     }
 
                                                 }
                                             });
+
 
                                         } else if (options[which].equals(options[0])){
 

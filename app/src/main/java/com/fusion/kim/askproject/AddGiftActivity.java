@@ -249,8 +249,6 @@ public class AddGiftActivity extends AppCompatActivity {
 
                                                                         if (task.isSuccessful()){
 
-                                                                            Toast.makeText(AddGiftActivity.this, "Gift Map: " + giftMap, Toast.LENGTH_SHORT).show();
-
                                                                             mAddingPD.dismiss();
 
                                                                             Intent mainIntent = new Intent(AddGiftActivity.this, GiftsListActivity.class);
@@ -318,8 +316,6 @@ public class AddGiftActivity extends AppCompatActivity {
 
                 if (type == 1){
 
-                    Toast.makeText(this, "Type: "+ type, Toast.LENGTH_SHORT).show();
-
                     mImageOneResultUri = result.getUri();
 
                     File thumbPath = new File(mImageOneResultUri.getPath());
@@ -339,8 +335,6 @@ public class AddGiftActivity extends AppCompatActivity {
                     }
 
                 } else if (type == 2){
-
-                    Toast.makeText(this, "Type: "+ type, Toast.LENGTH_SHORT).show();
 
                     mImageTwoResultUri = result.getUri();
 

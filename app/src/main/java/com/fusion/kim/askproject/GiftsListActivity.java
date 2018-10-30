@@ -116,6 +116,17 @@ public class GiftsListActivity extends AppCompatActivity {
                     mTotalCostTv.setText("$" + mTotalCost);
                     mTotalBoughtTv.setText(boughtItems + "/" + totalCount + " gifts bought");
 
+                    int progress = (boughtItems / (int) dataSnapshot.getChildrenCount()) * 100;
+
+                    if (progress > 90){
+
+                        mGiftsProgress.setProgress(progress);
+                        mGiftsProgress.setBackgroundColor(getResources().getColor(R.color.colorProgressGreen));
+                    } else {
+                        mGiftsProgress.setProgress(progress);
+                        mGiftsProgress.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                    }
+
                 }
 
             }

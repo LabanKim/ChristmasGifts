@@ -45,10 +45,18 @@ public class ViewGiftActivity extends AppCompatActivity {
 
     private double amount;
 
+    private ProgressDialog mProgress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_gift);
+
+        mProgress = new ProgressDialog(this);
+        mProgress.setMessage("Loading...");
+        mProgress.setCancelable(false);
+
+        mProgress.show();
 
         Bundle data = getIntent().getExtras();
         String giftName = data.getString("giftName");
@@ -71,6 +79,7 @@ public class ViewGiftActivity extends AppCompatActivity {
         mDescInput = findViewById(R.id.input_view_gift_desc);
         mBoughtSwitch = findViewById(R.id.switch_view_bought);
         mLoadingDetailsPB = findViewById(R.id.pb_loading_details);
+        mLoadingDetailsPB.setVisibility(View.GONE);
 
         mImageOneIv = findViewById(R.id.image_one_gift);
         mImageTwoIv = findViewById(R.id.image_two_gift);
@@ -102,11 +111,59 @@ public class ViewGiftActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                Picasso.get().load(getIntent().getStringExtra("imageOne")).into(mImageOneIv);
-                Picasso.get().load(getIntent().getStringExtra("imageTwo")).into(mImageTwoIv);
-                Picasso.get().load(getIntent().getStringExtra("imageThree")).into(mImageThreeIv);
+                Picasso.get().load(getIntent().getStringExtra("imageOne")).placeholder(R.drawable.placeholder_image_logo)
+                    .into(mImageOneIv, new Callback() {
+                        @Override
+                        public void onSuccess() {
 
-                mLoadingDetailsPB.setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+
+                            mProgress.dismiss();
+
+                            Toast.makeText(ViewGiftActivity.this, "Failed to load image "+ e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+
+                        }
+                    });
+
+                Picasso.get().load(getIntent().getStringExtra("imageTwo")).placeholder(R.drawable.placeholder_image_logo)
+                        .into(mImageTwoIv, new Callback() {
+                            @Override
+                            public void onSuccess() {
+
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+
+                                mProgress.dismiss();
+
+                                Toast.makeText(ViewGiftActivity.this, "Failed to load image "+ e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+
+                            }
+                        });
+
+                Picasso.get().load(getIntent().getStringExtra("imageThree")).placeholder(R.drawable.placeholder_image_logo)
+                        .into(mImageThreeIv, new Callback() {
+                            @Override
+                            public void onSuccess() {
+
+                                mProgress.dismiss();
+
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+
+                                mProgress.dismiss();
+
+                                Toast.makeText(ViewGiftActivity.this, "Failed to load image "+ e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+
+                            }
+                        });
+
             }
 
             @Override

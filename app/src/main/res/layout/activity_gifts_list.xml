@@ -87,8 +87,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_total_gifts_bought"
             style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
-            android:progressBackgroundTint="@color/colorProgressGreen"
-            android:background="@color/colorProgressGreen"
+            android:background="@color/colorPrimaryDark"
             android:layout_toRightOf="@+id/iv_santa"
             android:layout_marginLeft="8dp"
             android:layout_marginTop="3dp"/>
