@@ -16,6 +16,8 @@ public class ViewImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_image);
 
+        getSupportActionBar().setTitle("Images");
+
         mImage = findViewById(R.id.iv_image_view);
 
         ProgressDialog progressDialog = new ProgressDialog(this);
