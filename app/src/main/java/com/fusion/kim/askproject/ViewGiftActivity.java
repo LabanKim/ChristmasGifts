@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -22,6 +23,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +40,8 @@ public class ViewGiftActivity extends AppCompatActivity {
 
     private ProgressDialog mUpdatingPD;
     private ProgressBar mLoadingDetailsPB;
+
+    private ImageView mImageOneIv, mImageTwoIv, mImageThreeIv;
 
     private double amount;
 
@@ -66,6 +72,10 @@ public class ViewGiftActivity extends AppCompatActivity {
         mBoughtSwitch = findViewById(R.id.switch_view_bought);
         mLoadingDetailsPB = findViewById(R.id.pb_loading_details);
 
+        mImageOneIv = findViewById(R.id.image_one_gift);
+        mImageTwoIv = findViewById(R.id.image_two_gift);
+        mImageThreeIv = findViewById(R.id.image_three_gift);
+
         mGifNameInput.setText(giftName);
         mPriceInput.setText(String.valueOf(giftPrice));
         mDescInput.setText(description);
@@ -78,13 +88,57 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                 amount = dataSnapshot.child("totalAmount").getValue(Double.class);
 
-                mLoadingDetailsPB.setVisibility(View.GONE);
 
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+
+        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(personID).child(giftKey).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                Picasso.get().load(getIntent().getStringExtra("imageOne")).into(mImageOneIv);
+                Picasso.get().load(getIntent().getStringExtra("imageTwo")).into(mImageTwoIv);
+                Picasso.get().load(getIntent().getStringExtra("imageThree")).into(mImageThreeIv);
+
+                mLoadingDetailsPB.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        mImageOneIv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
+                viewIntent.putExtra("image", getIntent().getStringExtra("imageOne"));
+                startActivity(viewIntent);
+            }
+        });
+
+        mImageTwoIv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
+                viewIntent.putExtra("image", getIntent().getStringExtra("imageTwo"));
+                startActivity(viewIntent);
+            }
+        });
+
+        mImageThreeIv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
+                viewIntent.putExtra("image", getIntent().getStringExtra("imageThree"));
+                startActivity(viewIntent);
             }
         });
 

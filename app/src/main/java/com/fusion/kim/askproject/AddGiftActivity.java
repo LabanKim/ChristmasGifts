@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -27,7 +28,6 @@ import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -47,20 +47,24 @@ public class AddGiftActivity extends AppCompatActivity {
 
     private ImageView mImageOneIv, mImageTwoIv, mImageThreeIv;
 
-    private Bitmap mCompressedImageBitmap;
-    private Uri mResultUri = null;
+    private Button uploadBtn;
+
+    private Bitmap mCompressedImageBitmapOne, mCompressedImageBitmapTwo, mCompressedImageBitmapThree;
+    private Uri mImageOneResultUri = null, mImageTwoResultUri = null,
+            mImageThreeResultUri = null, defaultUri;
 
     private StorageReference mImagesStorage, mBitmapsStorage;
 
-    private String mBitmapDownloadUrl = null;
 
+    private int type = 0;
+
+    private Map giftMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_gift);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Add a Gift");
 
         mAuth = FirebaseAuth.getInstance();
@@ -80,6 +84,11 @@ public class AddGiftActivity extends AppCompatActivity {
         mImageTwoIv = findViewById(R.id.image_two);
         mImageThreeIv = findViewById(R.id.image_three);
 
+
+        defaultUri = Uri.parse("android.resource://com.fusion.kim.askproject/" + R.drawable.placeholder_image_logo);
+
+        uploadBtn = findViewById(R.id.btn_upload);
+
         mAddingPD = new ProgressDialog(this);
         mAddingPD.setTitle("Adding Gift");
         mAddingPD.setMessage("Processing...");
@@ -88,6 +97,8 @@ public class AddGiftActivity extends AppCompatActivity {
         mImageOneIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                type = 1;
 
                 CropImage.activity()
                         .setAspectRatio(1,1)
@@ -102,12 +113,26 @@ public class AddGiftActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+                type = 2;
+
+                CropImage.activity()
+                        .setAspectRatio(1,1)
+                        .setGuidelines(CropImageView.Guidelines.ON)
+                        .start(AddGiftActivity.this);
+
             }
         });
 
         mImageThreeIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                type = 3;
+
+                CropImage.activity()
+                        .setAspectRatio(1,1)
+                        .setGuidelines(CropImageView.Guidelines.ON)
+                        .start(AddGiftActivity.this);
 
             }
         });
@@ -157,39 +182,122 @@ public class AddGiftActivity extends AppCompatActivity {
             return;
         }
 
+        if (mImageOneResultUri == null){
+
+            mImageOneResultUri = defaultUri;
+
+        }
+
+        if (mImageTwoResultUri == null){
+
+            mImageTwoResultUri = defaultUri;
+
+        }
+
+        if (mImageThreeResultUri == null){
+
+            mImageThreeResultUri = defaultUri;
+
+        }
+
         if (!TextUtils.isEmpty(giftName) && !TextUtils.isEmpty(priceString)) {
 
             mAddingPD.show();
 
             final String giftKey = mGiftsRef.push().getKey().toString().trim();
 
-            final Map giftMap = new HashMap();
+            giftMap = new HashMap();
             giftMap.put("giftName", giftName);
             giftMap.put("giftPrice", Double.parseDouble(priceString));
             giftMap.put("description", desc);
             giftMap.put("bought", boughtState);
-            giftMap.put("totalAmount", 0);
-            giftMap.put("imageUrl", "default");
-            giftMap.put("bitmapUrl", "default");
 
-            mGiftsRef.child(giftKey).setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            mImagesStorage.child(giftKey).child("image1").putFile(mImageOneResultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                 @Override
-                public void onComplete(@NonNull Task<Void> task) {
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
                     if (task.isSuccessful()){
 
-                        mAddingPD.dismiss();
+                        final String imageOneDownloadUrl = task.getResult().getDownloadUrl().toString();
+                        giftMap.put("imageOne", imageOneDownloadUrl);
 
-                        Intent mainIntent = new Intent(AddGiftActivity.this, GiftsListActivity.class);
-                        mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
-                        mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
-                        startActivity(mainIntent);
-                        finish();
+
+                        mImagesStorage.child(giftKey).child("image2").putFile(mImageTwoResultUri)
+                                .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+
+                                        if (task.isSuccessful()){
+
+                                            final String imageTwoDownloadUrl = task.getResult().getDownloadUrl().toString();
+                                            giftMap.put("imageTwo", imageTwoDownloadUrl);
+
+                                            mImagesStorage.child(giftKey).child("image3").putFile(mImageThreeResultUri)
+                                                    .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+                                                            if (task.isSuccessful()){
+
+                                                                final String imageThreeDownloadUrl = task.getResult().getDownloadUrl().toString();
+                                                                giftMap.put("imageThree", imageThreeDownloadUrl);
+
+                                                                mGiftsRef.child(giftKey).setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                    @Override
+                                                                    public void onComplete(@NonNull Task<Void> task) {
+
+                                                                        if (task.isSuccessful()){
+
+                                                                            Toast.makeText(AddGiftActivity.this, "Gift Map: " + giftMap, Toast.LENGTH_SHORT).show();
+
+                                                                            mAddingPD.dismiss();
+
+                                                                            Intent mainIntent = new Intent(AddGiftActivity.this, GiftsListActivity.class);
+                                                                            mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                                                                            mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                                                                            startActivity(mainIntent);
+                                                                            finish();
+
+                                                                        } else {
+                                                                            mAddingPD.dismiss();
+
+                                                                            Toast.makeText(AddGiftActivity.this, "Failed to save gift. Try Again", Toast.LENGTH_LONG).show();
+                                                                        }
+
+                                                                    }
+                                                                });
+
+
+                                                            } else {
+
+                                                                mAddingPD.dismiss();
+
+                                                                Toast.makeText(AddGiftActivity.this, "Failed to Upload Third Image", Toast.LENGTH_LONG).show();
+
+                                                            }
+
+                                                        }
+                                                    });
+
+                                        } else {
+
+                                            mAddingPD.dismiss();
+
+                                            Toast.makeText(AddGiftActivity.this, "Failed to Upload Second Image", Toast.LENGTH_LONG).show();
+
+                                        }
+
+                                    }
+                                });
 
                     } else {
+
                         mAddingPD.dismiss();
 
-                        Toast.makeText(AddGiftActivity.this, "Failed to save gift. Try Again", Toast.LENGTH_LONG).show();
+                        Toast.makeText(AddGiftActivity.this, "Failed to Upload First Image", Toast.LENGTH_LONG).show();
+
+
                     }
 
                 }
@@ -207,25 +315,74 @@ public class AddGiftActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
 
             if (resultCode == RESULT_OK) {
-                mResultUri = result.getUri();
 
-                File thumbPath = new File(mResultUri.getPath());
+                if (type == 1){
 
-                try {
-                    mCompressedImageBitmap = new Compressor(AddGiftActivity.this)
-                            .setMaxWidth(200)
-                            .setMaxHeight(200)
-                            .setQuality(75)
-                            .compressToBitmap(thumbPath);
+                    Toast.makeText(this, "Type: "+ type, Toast.LENGTH_SHORT).show();
 
-                    mImageOneIv.setImageBitmap(mCompressedImageBitmap);
-                    mImageTwoIv.setImageBitmap(mCompressedImageBitmap);
-                    mImageThreeIv.setImageBitmap(mCompressedImageBitmap);
-                } catch (IOException e) {
+                    mImageOneResultUri = result.getUri();
 
-                    e.printStackTrace();
+                    File thumbPath = new File(mImageOneResultUri.getPath());
+
+                    try {
+                        mCompressedImageBitmapOne = new Compressor(AddGiftActivity.this)
+                                .setMaxWidth(200)
+                                .setMaxHeight(200)
+                                .setQuality(75)
+                                .compressToBitmap(thumbPath);
+
+                        mImageOneIv.setImageBitmap(mCompressedImageBitmapOne);
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+
+                    }
+
+                } else if (type == 2){
+
+                    Toast.makeText(this, "Type: "+ type, Toast.LENGTH_SHORT).show();
+
+                    mImageTwoResultUri = result.getUri();
+
+                    File thumbPath = new File(mImageTwoResultUri.getPath());
+
+                    try {
+                        mCompressedImageBitmapTwo = new Compressor(AddGiftActivity.this)
+                                .setMaxWidth(200)
+                                .setMaxHeight(200)
+                                .setQuality(75)
+                                .compressToBitmap(thumbPath);
+
+                        mImageTwoIv.setImageBitmap(mCompressedImageBitmapTwo);
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+
+                    }
+
+                } else if (type == 3){
+
+                    mImageThreeResultUri = result.getUri();
+
+                    File thumbPath = new File(mImageThreeResultUri.getPath());
+
+                    try {
+                        mCompressedImageBitmapThree = new Compressor(AddGiftActivity.this)
+                                .setMaxWidth(200)
+                                .setMaxHeight(200)
+                                .setQuality(75)
+                                .compressToBitmap(thumbPath);
+
+                        mImageThreeIv.setImageBitmap(mCompressedImageBitmapThree);
+                    } catch (IOException e) {
+
+                        e.printStackTrace();
+
+                    }
 
                 }
+
+
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
 

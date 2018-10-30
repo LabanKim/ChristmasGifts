@@ -74,6 +74,48 @@
 
     </LinearLayout>
 
+    <HorizontalScrollView
+        android:id="@+id/sec_two_gift"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/sec_one_view_gift"
+        android:background="@color/colorTransparentBlack"
+        android:layout_marginTop="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="18dp"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/image_one_gift"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/placeholder_image_logo"
+                android:layout_marginRight="8dp"/>
+
+            <ImageView
+                android:id="@+id/image_two_gift"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/placeholder_image_logo"
+                android:layout_marginRight="8dp"/>
+
+            <ImageView
+                android:id="@+id/image_three_gift"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/placeholder_image_logo"/>
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+
+
     <ProgressBar
         android:id="@+id/pb_loading_details"
         android:layout_width="wrap_content"
@@ -88,7 +130,7 @@
         android:paddingHorizontal="8dp"
         android:paddingTop="18dp"
         android:paddingBottom="20dp"
-        android:layout_below="@+id/sec_one_view_gift"
+        android:layout_below="@+id/sec_two_gift"
         android:layout_marginTop="16dp">
 
         <TextView

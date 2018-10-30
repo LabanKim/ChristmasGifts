@@ -163,6 +163,9 @@ public class GiftsListActivity extends AppCompatActivity {
                         giftsIntent.putExtra("description", model.getDescription());
                         giftsIntent.putExtra("bought", model.isBought());
                         giftsIntent.putExtra("giftKey", getRef(position).getKey());
+                        giftsIntent.putExtra("imageOne", model.getImageOne());
+                        giftsIntent.putExtra("imageTwo", model.getImageTwo());
+                        giftsIntent.putExtra("imageThree", model.getImageThree());
                         startActivityForResult(giftsIntent, 1);
 
                     }

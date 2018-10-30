@@ -5,15 +5,19 @@ public class Gift {
     private String giftName, description;
     private double giftPrice;
     private boolean bought;
+    private String imageOne, ImageTwo, imageThree;
 
     public Gift() {
     }
 
-    public Gift(String giftName, String description, double giftPrice, boolean bought) {
+    public Gift(String giftName, String description, double giftPrice, boolean bought, String imageOne, String imageTwo, String imageThree) {
         this.giftName = giftName;
         this.description = description;
         this.giftPrice = giftPrice;
         this.bought = bought;
+        this.imageOne = imageOne;
+        ImageTwo = imageTwo;
+        this.imageThree = imageThree;
     }
 
     public String getGiftName() {
@@ -46,5 +50,29 @@ public class Gift {
 
     public void setBought(boolean bought) {
         this.bought = bought;
+    }
+
+    public String getImageOne() {
+        return imageOne;
+    }
+
+    public void setImageOne(String imageOne) {
+        this.imageOne = imageOne;
+    }
+
+    public String getImageTwo() {
+        return ImageTwo;
+    }
+
+    public void setImageTwo(String imageTwo) {
+        ImageTwo = imageTwo;
+    }
+
+    public String getImageThree() {
+        return imageThree;
+    }
+
+    public void setImageThree(String imageThree) {
+        this.imageThree = imageThree;
     }
 }

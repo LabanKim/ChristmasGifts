@@ -147,6 +147,15 @@
 
         </LinearLayout>
 
+        <Button
+            android:id="@+id/btn_upload"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/button_shape"
+            android:layout_centerHorizontal="true"
+            android:text="Upload"/>
+
     </RelativeLayout>
 
 

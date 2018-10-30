@@ -10,7 +10,8 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_gifts_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_above="@+id/layout_gifts_items_count">
 
     </android.support.v7.widget.RecyclerView>
 
@@ -38,7 +39,7 @@
         android:paddingVertical="10dp"
         android:layout_alignParentBottom="true"
         android:background="@android:color/white"
-        android:visibility="visible">
+        android:visibility="invisible">
 
         <ImageView
             android:id="@+id/iv_santa"
