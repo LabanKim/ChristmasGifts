@@ -20,8 +20,11 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -60,6 +63,9 @@ public class AddGiftActivity extends AppCompatActivity {
 
     private Map giftMap;
 
+    private double totalAmount = 0;
+    private String deadline = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +99,23 @@ public class AddGiftActivity extends AppCompatActivity {
         mAddingPD.setTitle("Adding Gift");
         mAddingPD.setMessage("Processing...");
         mAddingPD.setCancelable(false);
+
+        FirebaseDatabase.getInstance().getReference().child("PeopleList")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(getIntent().getStringExtra("personID")).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                totalAmount = dataSnapshot.child("totalAmount").getValue(Double.class);
+                deadline = dataSnapshot.child("deadline").getValue(String.class);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         mImageOneIv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -249,13 +272,57 @@ public class AddGiftActivity extends AppCompatActivity {
 
                                                                         if (task.isSuccessful()){
 
-                                                                            mAddingPD.dismiss();
+                                                                            if (!boughtState){
 
-                                                                            Intent mainIntent = new Intent(AddGiftActivity.this, GiftsListActivity.class);
-                                                                            mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
-                                                                            mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
-                                                                            startActivity(mainIntent);
-                                                                            finish();
+                                                                                mAddingPD.dismiss();
+
+                                                                                Intent mainIntent = new Intent(AddGiftActivity.this, GiftsListActivity.class);
+                                                                                mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                                                                                mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                                                                                startActivity(mainIntent);
+                                                                                finish();
+
+                                                                            } else {
+
+                                                                                totalAmount += Double.parseDouble(priceString);
+
+
+                                                                                DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("PeopleList")
+                                                                                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                                                                        .child(getIntent().getStringExtra("personID"));
+
+                                                                                Map map = new HashMap();
+                                                                                map.put("bought", true);
+                                                                                map.put("totalAmount", totalAmount);
+                                                                                map.put("deadline", deadline);
+                                                                                map.put("personName", getIntent().getStringExtra("personName"));
+
+
+                                                                                ref.setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                    @Override
+                                                                                    public void onComplete(@NonNull Task<Void> task) {
+
+                                                                                        if (task.isSuccessful()){
+
+                                                                                            mAddingPD.dismiss();
+
+                                                                                            Intent mainIntent = new Intent(AddGiftActivity.this, GiftsListActivity.class);
+                                                                                            mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                                                                                            mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                                                                                            startActivity(mainIntent);
+                                                                                            finish();
+
+                                                                                        } else {
+
+                                                                                            Toast.makeText(AddGiftActivity.this, "Failed to save changes", Toast.LENGTH_LONG).show();
+
+                                                                                        }
+
+                                                                                    }
+                                                                                });
+
+                                                                            }
+
 
                                                                         } else {
                                                                             mAddingPD.dismiss();

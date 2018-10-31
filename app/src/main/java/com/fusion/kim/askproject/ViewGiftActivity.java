@@ -47,6 +47,8 @@ public class ViewGiftActivity extends AppCompatActivity {
 
     private ProgressDialog mProgress;
 
+    private double totalAmount;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,6 +90,7 @@ public class ViewGiftActivity extends AppCompatActivity {
         mGifNameInput.setText(giftName);
         mPriceInput.setText(String.valueOf(giftPrice));
         mDescInput.setText(description);
+
 
         FirebaseDatabase.getInstance().getReference().child("PeopleList")
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(personID)
