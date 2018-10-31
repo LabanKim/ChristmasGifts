@@ -47,7 +47,7 @@ public class ViewGiftActivity extends AppCompatActivity {
 
     private ProgressDialog mProgress;
 
-    private double totalAmount;
+    private String imageOne = null, imageTwo = null, imageThree = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +81,11 @@ public class ViewGiftActivity extends AppCompatActivity {
         mDescInput = findViewById(R.id.input_view_gift_desc);
         mBoughtSwitch = findViewById(R.id.switch_view_bought);
         mLoadingDetailsPB = findViewById(R.id.pb_loading_details);
+
+        imageOne = getIntent().getStringExtra("imageOne");
+        imageTwo = getIntent().getStringExtra("imageTwo");
+        imageThree = getIntent().getStringExtra("imageThree");
+
         mLoadingDetailsPB.setVisibility(View.GONE);
 
         mImageOneIv = findViewById(R.id.image_one_gift);
@@ -113,6 +118,7 @@ public class ViewGiftActivity extends AppCompatActivity {
                 .child(personID).child(giftKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
 
                 Picasso.get().load(getIntent().getStringExtra("imageOne"))
                     .into(mImageOneIv, new Callback() {
@@ -205,6 +211,7 @@ public class ViewGiftActivity extends AppCompatActivity {
 
         if (bought){
 
+
             mBoughtSwitch.setChecked(true);
 
         } else {
@@ -271,6 +278,9 @@ public class ViewGiftActivity extends AppCompatActivity {
             giftMap.put("giftPrice", Double.parseDouble(priceString));
             giftMap.put("description", desc);
             giftMap.put("bought", boughtState);
+            giftMap.put("imageOne", imageOne);
+            giftMap.put("imageTwo", imageTwo);
+            giftMap.put("imageThree", imageThree);
 
             if (boughtState){
 
@@ -305,7 +315,7 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                                                         mUpdatingPD.dismiss();
 
-                                                        Toast.makeText(ViewGiftActivity.this, "Amount" + amount, Toast.LENGTH_SHORT).show();
+                                                        Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
 
                                                         Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
                                                         mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
@@ -313,7 +323,7 @@ public class ViewGiftActivity extends AppCompatActivity {
                                                         startActivity(mainIntent);
                                                         finish();
 
-                                                        Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
+
 
                                                     } else {
 
