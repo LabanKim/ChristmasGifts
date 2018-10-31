@@ -98,8 +98,8 @@ public class ViewGiftActivity extends AppCompatActivity {
 
 
         FirebaseDatabase.getInstance().getReference().child("PeopleList")
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(personID)
-                .addValueEventListener(new ValueEventListener() {
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(getIntent().getStringExtra("personID")).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
@@ -113,6 +113,7 @@ public class ViewGiftActivity extends AppCompatActivity {
 
             }
         });
+
 
         FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .child(personID).child(giftKey).addValueEventListener(new ValueEventListener() {

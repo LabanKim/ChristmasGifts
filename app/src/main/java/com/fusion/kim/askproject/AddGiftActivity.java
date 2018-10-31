@@ -50,8 +50,6 @@ public class AddGiftActivity extends AppCompatActivity {
 
     private ImageView mImageOneIv, mImageTwoIv, mImageThreeIv;
 
-    private Button uploadBtn;
-
     private Bitmap mCompressedImageBitmapOne, mCompressedImageBitmapTwo, mCompressedImageBitmapThree;
     private Uri mImageOneResultUri = null, mImageTwoResultUri = null,
             mImageThreeResultUri = null, defaultUri;
@@ -93,7 +91,6 @@ public class AddGiftActivity extends AppCompatActivity {
 
         defaultUri = Uri.parse("android.resource://com.fusion.kim.askproject/" + R.drawable.placeholder_image_logo);
 
-        uploadBtn = findViewById(R.id.btn_upload);
 
         mAddingPD = new ProgressDialog(this);
         mAddingPD.setTitle("Adding Gift");

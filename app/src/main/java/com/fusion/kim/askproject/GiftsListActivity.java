@@ -48,6 +48,8 @@ public class GiftsListActivity extends AppCompatActivity {
 
     private String personID = "";
 
+    double totalAmount = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +76,22 @@ public class GiftsListActivity extends AppCompatActivity {
         mGiftListRef = FirebaseDatabase.getInstance().getReference().child("GiftsList")
                 .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"));
         mGiftListRef.keepSynced(true);
+
+        FirebaseDatabase.getInstance().getReference().child("PeopleList")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(getIntent().getStringExtra("personID")).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                totalAmount = dataSnapshot.child("totalAmount").getValue(Double.class);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
     }
 
@@ -207,26 +225,49 @@ public class GiftsListActivity extends AppCompatActivity {
 
                                         progress.show();
 
-                                        mGiftListRef.child(getRef(position).getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
+                                        if (model.isBought()){
 
-                                                if (task.isSuccessful()){
+                                            totalAmount -= model.getGiftPrice();
 
-                                                    progress.dismiss();
+                                        }
 
-                                                    Toast.makeText(GiftsListActivity.this, "Gift Deleted", Toast.LENGTH_LONG).show();
+                                        FirebaseDatabase.getInstance().getReference().child("PeopleList")
+                                                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                                .child(getIntent().getStringExtra("personID"))
+                                                .child("totalAmount").setValue(totalAmount)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
 
-                                                } else {
+                                                        if (task.isSuccessful()){
 
-                                                    progress.dismiss();
+                                                            mGiftListRef.child(getRef(position).getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<Void> task) {
 
-                                                    Toast.makeText(GiftsListActivity.this, "Failed to Delete Gift. Try Again", Toast.LENGTH_LONG).show();
+                                                                    if (task.isSuccessful()){
 
-                                                }
+                                                                        progress.dismiss();
 
-                                            }
-                                        });
+                                                                        Toast.makeText(GiftsListActivity.this, "Gift Deleted", Toast.LENGTH_LONG).show();
+
+                                                                    } else {
+
+                                                                        progress.dismiss();
+
+                                                                        Toast.makeText(GiftsListActivity.this, "Failed to Delete Gift. Try Again", Toast.LENGTH_LONG).show();
+
+                                                                    }
+
+                                                                }
+                                                            });
+
+                                                        } else {
+                                                            Toast.makeText(GiftsListActivity.this, "Failed to Update price", Toast.LENGTH_LONG).show();
+                                                        }
+
+                                                    }
+                                                });
 
                                     }
                                 })
