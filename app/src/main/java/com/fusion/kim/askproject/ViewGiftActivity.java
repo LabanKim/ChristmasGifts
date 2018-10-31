@@ -111,7 +111,7 @@ public class ViewGiftActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                Picasso.get().load(getIntent().getStringExtra("imageOne")).placeholder(R.drawable.placeholder_image_logo)
+                Picasso.get().load(getIntent().getStringExtra("imageOne"))
                     .into(mImageOneIv, new Callback() {
                         @Override
                         public void onSuccess() {
@@ -128,7 +128,7 @@ public class ViewGiftActivity extends AppCompatActivity {
                         }
                     });
 
-                Picasso.get().load(getIntent().getStringExtra("imageTwo")).placeholder(R.drawable.placeholder_image_logo)
+                Picasso.get().load(getIntent().getStringExtra("imageTwo"))
                         .into(mImageTwoIv, new Callback() {
                             @Override
                             public void onSuccess() {
@@ -145,7 +145,7 @@ public class ViewGiftActivity extends AppCompatActivity {
                             }
                         });
 
-                Picasso.get().load(getIntent().getStringExtra("imageThree")).placeholder(R.drawable.placeholder_image_logo)
+                Picasso.get().load(getIntent().getStringExtra("imageThree"))
                         .into(mImageThreeIv, new Callback() {
                             @Override
                             public void onSuccess() {
@@ -163,6 +163,7 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                             }
                         });
+
 
             }
 
@@ -300,6 +301,8 @@ public class ViewGiftActivity extends AppCompatActivity {
                                                     if (task.isSuccessful()){
 
                                                         mUpdatingPD.dismiss();
+
+                                                        Toast.makeText(ViewGiftActivity.this, "Amount" + amount, Toast.LENGTH_SHORT).show();
 
                                                         Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
                                                         mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
