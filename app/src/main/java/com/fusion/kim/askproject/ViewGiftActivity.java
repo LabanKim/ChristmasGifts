@@ -97,28 +97,28 @@ public class ViewGiftActivity extends AppCompatActivity {
         mDescInput.setText(description);
 
 
-        FirebaseDatabase.getInstance().getReference().child("PeopleList")
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child(getIntent().getStringExtra("personID")).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                amount = dataSnapshot.child("totalAmount").getValue(Double.class);
-
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
         FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .child(personID).child(giftKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
+                FirebaseDatabase.getInstance().getReference().child("PeopleList")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                        .child(getIntent().getStringExtra("personID")).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        amount = dataSnapshot.child("totalAmount").getValue(Double.class);
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+                Toast.makeText(ViewGiftActivity.this, "Amount: " + amount, Toast.LENGTH_SHORT).show();
 
 
                 Picasso.get().load(getIntent().getStringExtra("imageOne"))
@@ -296,53 +296,58 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                     if (task.isSuccessful()){
 
-                        FirebaseDatabase.getInstance().getReference().child("PeopleList")
-                                .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"))
-                                .child("bought").setValue(boughtState).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
+                        if (boughtState){
 
-                                if (task.isSuccessful()){
+                            FirebaseDatabase.getInstance().getReference().child("PeopleList")
+                                    .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"))
+                                    .child("bought").setValue(boughtState).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
 
-                                    FirebaseDatabase.getInstance().getReference().child("PeopleList")
-                                            .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                            .child(getIntent().getStringExtra("personID"))
-                                            .child("totalAmount").setValue(amount)
-                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-
-                                                    if (task.isSuccessful()){
-
-                                                        mUpdatingPD.dismiss();
-
-                                                        Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
-
-                                                        Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
-                                                        mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
-                                                        mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
-                                                        startActivity(mainIntent);
-                                                        finish();
+                                    if (task.isSuccessful()){
 
 
+                                        FirebaseDatabase.getInstance().getReference().child("PeopleList")
+                                                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                                .child(getIntent().getStringExtra("personID"))
+                                                .child("totalAmount").setValue(amount)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
 
-                                                    } else {
+                                                        if (task.isSuccessful()){
 
-                                                        Toast.makeText(ViewGiftActivity.this, "Failed Update Amount", Toast.LENGTH_LONG).show();
+                                                            mUpdatingPD.dismiss();
+
+                                                            Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
+
+                                                            Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
+                                                            mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                                                            mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                                                            startActivity(mainIntent);
+                                                            finish();
+
+
+
+                                                        } else {
+
+                                                            Toast.makeText(ViewGiftActivity.this, "Failed Update Amount", Toast.LENGTH_LONG).show();
+
+                                                        }
 
                                                     }
+                                                });
 
-                                                }
-                                            });
+                                    } else {
 
-                                } else {
+                                        Toast.makeText(ViewGiftActivity.this, "Failed to update gift. Try Again", Toast.LENGTH_LONG).show();
 
-                                    Toast.makeText(ViewGiftActivity.this, "Failed to update gift. Try Again", Toast.LENGTH_LONG).show();
+                                    }
 
                                 }
+                            });
 
-                            }
-                        });
+                        }
 
                     } else {
                         mUpdatingPD.dismiss();
