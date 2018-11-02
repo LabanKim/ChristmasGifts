@@ -212,7 +212,6 @@ public class MainActivity extends AppCompatActivity
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 Person person = snapshot.getValue(Person.class);
 
-                                mTotalCost += person.getTotalAmount();
 
                                 if (person.isBought()){
 

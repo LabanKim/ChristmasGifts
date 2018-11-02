@@ -261,32 +261,81 @@ public class ViewGiftActivity extends AppCompatActivity {
             giftMap.put("imageTwo", imageTwo);
             giftMap.put("imageThree", imageThree);
 
+            if (boughtState){
 
-            mGiftsRef.setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
+                FirebaseDatabase.getInstance().getReference().child("PeopleList").child(mAuth.getCurrentUser().getUid())
+                        .child(getIntent().getStringExtra("personID")).child("bought")
+                        .setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
 
-                    if (task.isSuccessful()){
+                        if (task.isSuccessful()){
 
-                        mUpdatingPD.dismiss();
+                            mGiftsRef.setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
 
-                        Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
+                                    if (task.isSuccessful()){
 
-                        Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
-                        mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
-                        mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
-                        startActivity(mainIntent);
-                        finish();
+                                        mUpdatingPD.dismiss();
+
+                                        Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
+
+                                        Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
+                                        mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                                        mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                                        startActivity(mainIntent);
+                                        finish();
 
 
-                    } else {
+                                    } else {
 
-                        Toast.makeText(ViewGiftActivity.this, "Failed Update Amount", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(ViewGiftActivity.this, "Failed Update Amount", Toast.LENGTH_LONG).show();
+
+                                    }
+
+                                }
+                            });
+
+                        } else {
+
+                            Toast.makeText(ViewGiftActivity.this, "Failed to update data", Toast.LENGTH_LONG).show();
+
+                        }
 
                     }
+                });
 
-                }
-            });
+            } else {
+
+                mGiftsRef.setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()){
+
+                            mUpdatingPD.dismiss();
+
+                            Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
+
+                            Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
+                            mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                            mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                            startActivity(mainIntent);
+                            finish();
+
+
+                        } else {
+
+                            Toast.makeText(ViewGiftActivity.this, "Failed Update Amount", Toast.LENGTH_LONG).show();
+
+                        }
+
+                    }
+                });
+
+            }
+
 
         }
 
