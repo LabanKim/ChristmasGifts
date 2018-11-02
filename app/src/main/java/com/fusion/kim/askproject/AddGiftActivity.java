@@ -61,7 +61,6 @@ public class AddGiftActivity extends AppCompatActivity {
 
     private Map giftMap;
 
-    private double totalAmount = 0;
     private String deadline = null;
 
     @Override
@@ -103,7 +102,6 @@ public class AddGiftActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                totalAmount = dataSnapshot.child("totalAmount").getValue(Double.class);
                 deadline = dataSnapshot.child("deadline").getValue(String.class);
 
             }
@@ -281,16 +279,12 @@ public class AddGiftActivity extends AppCompatActivity {
 
                                                                             } else {
 
-                                                                                totalAmount += Double.parseDouble(priceString);
-
-
                                                                                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("PeopleList")
                                                                                         .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                                                                         .child(getIntent().getStringExtra("personID"));
 
                                                                                 Map map = new HashMap();
                                                                                 map.put("bought", true);
-                                                                                map.put("totalAmount", totalAmount);
                                                                                 map.put("deadline", deadline);
                                                                                 map.put("personName", getIntent().getStringExtra("personName"));
 

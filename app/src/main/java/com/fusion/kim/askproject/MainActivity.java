@@ -108,6 +108,9 @@ public class MainActivity extends AppCompatActivity
 
         }
 
+        mTotalCost = 0;
+        mBoughtCost = 0;
+
         mPeopleListRef = FirebaseDatabase.getInstance().getReference();
 
         mPeopleRv = findViewById(R.id.rv_people_list);
@@ -147,20 +150,25 @@ public class MainActivity extends AppCompatActivity
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                                mTotalCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+                                                if (dataSnapshot.hasChildren()){
 
-                                                boolean bought = dataSnapshot.child("bought").getValue(Boolean.class);
+                                                    mTotalCost += dataSnapshot.child("giftPrice").getValue(Double.class);
 
-                                                if (bought){
+                                                    boolean bought = dataSnapshot.child("bought").getValue(Boolean.class);
 
-                                                    mBoughtCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+                                                    if (bought){
+
+                                                        mBoughtCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+
+                                                    }
+
+                                                    mGeneralTotalCostTv.setText("$" + mBoughtCost +"/$" + mTotalCost);
+
+
+                                                    Log.e("Retrieved String", dataSnapshot.child("giftPrice").getValue(Double.class).toString());
 
                                                 }
 
-                                                mGeneralTotalCostTv.setText("$" + mBoughtCost +"/$" + mTotalCost);
-
-
-                                                Log.e("Retrieved String", dataSnapshot.child("giftPrice").getValue(Double.class).toString());
                                             }
 
                                             @Override
@@ -266,8 +274,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-
-        mTotalCost = 0;
 
         mAuth.addAuthStateListener(mAuthListener);
 
