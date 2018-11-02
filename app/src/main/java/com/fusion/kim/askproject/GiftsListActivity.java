@@ -36,7 +36,7 @@ import com.google.firebase.database.ValueEventListener;
 public class GiftsListActivity extends AppCompatActivity {
 
     private RecyclerView mGiftListRv;
-    private TextView mNoGiftsTv, mTotalCostTv, mTotalBoughtTv;
+    private TextView mNoGiftsTv, mTotalCostTv, mTotalBoughtTv, mPersonGiftNameTv;
     private RelativeLayout mTotalGiftsCountLayout;
 
     private DatabaseReference mGiftListRef;
@@ -44,7 +44,7 @@ public class GiftsListActivity extends AppCompatActivity {
 
     private ProgressBar mGiftsProgress;
 
-    private double mTotalCost = 0;
+    private double mTotalCostBought = 0, mTotalPrice = 0;
 
     private String personID = "";
 
@@ -65,6 +65,9 @@ public class GiftsListActivity extends AppCompatActivity {
         mTotalGiftsCountLayout = findViewById(R.id.layout_gifts_items_count);
         mTotalCostTv = findViewById(R.id.tv_total_gifts_spent);
         mTotalBoughtTv = findViewById(R.id.tv_total_gifts_bought);
+        mPersonGiftNameTv = findViewById(R.id.tv_gift_person_name);
+
+        mPersonGiftNameTv.setText(getIntent().getStringExtra("personName"));
 
         mGiftsProgress = findViewById(R.id.pb_gifts_bought_progress);
 
@@ -93,13 +96,6 @@ public class GiftsListActivity extends AppCompatActivity {
             }
         });
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-
         mGiftListRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -118,9 +114,11 @@ public class GiftsListActivity extends AppCompatActivity {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Gift gift = snapshot.getValue(Gift.class);
 
+                        mTotalPrice += gift.getGiftPrice();
+
                         if (gift.isBought()){
 
-                            mTotalCost += gift.getGiftPrice();
+                            mTotalCostBought += gift.getGiftPrice();
                             boughtItems += 1;
 
                         }
@@ -129,20 +127,25 @@ public class GiftsListActivity extends AppCompatActivity {
                     mNoGiftsTv.setVisibility(View.GONE);
                     mTotalGiftsCountLayout.setVisibility(View.VISIBLE);
                     mTotalBoughtTv.setText("Bought: " + boughtItems + "/" + totalCount);
-                    mTotalCostTv.setText("Total Cost: "+ mTotalCost + "$");
 
-                    mTotalCostTv.setText("$" + mTotalCost);
+                    mTotalCostTv.setText("$" + mTotalCostBought + "/$" + mTotalPrice );
                     mTotalBoughtTv.setText(boughtItems + "/" + totalCount + " gifts bought");
 
-                    int progress = (boughtItems / (int) dataSnapshot.getChildrenCount()) * 100;
+                    double progress = ((double) boughtItems / (double) (int) dataSnapshot.getChildrenCount()) * 100;
 
-                    if (progress > 90){
+                    if (progress == 0){
 
-                        mGiftsProgress.setProgress(progress);
-                        mGiftsProgress.setBackgroundColor(getResources().getColor(R.color.colorProgressGreen));
+                        mGiftsProgress.setBackground(getResources().getDrawable(R.drawable.custom_progress_background));
+
+                    } else if (progress > 90){
+
+                        mGiftsProgress.setProgress((int) progress);
+                        mGiftsProgress.setBackgroundResource(0);
+                        mGiftsProgress.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal));
+
                     } else {
-                        mGiftsProgress.setProgress(progress);
-                        mGiftsProgress.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+                        mGiftsProgress.setProgress((int) progress);
+                        mGiftsProgress.setBackgroundResource(0);
                     }
 
                 }
@@ -154,6 +157,12 @@ public class GiftsListActivity extends AppCompatActivity {
 
             }
         });
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
         Query query = mGiftListRef.limitToLast(50);
 
@@ -168,6 +177,7 @@ public class GiftsListActivity extends AppCompatActivity {
             protected void onBindViewHolder(@NonNull GiftsViewHolder holder, final int position, @NonNull final Gift model) {
 
                 holder.mGiftNameTv.setText(model.getGiftName());
+                holder.mGiftPriceTv.setText("$" + model.getGiftPrice());
 
                 if (model.isBought()){
 
@@ -324,7 +334,7 @@ public class GiftsListActivity extends AppCompatActivity {
     private class GiftsViewHolder extends RecyclerView.ViewHolder{
 
         private View mView;
-        private TextView mGiftNameTv;
+        private TextView mGiftNameTv, mGiftPriceTv;
         private ImageView mGiftIv;
 
         public GiftsViewHolder(View itemView) {
@@ -332,6 +342,7 @@ public class GiftsListActivity extends AppCompatActivity {
 
             mView = itemView;
             mGiftNameTv = itemView.findViewById(R.id.tv_gift_name);
+            mGiftPriceTv = itemView.findViewById(R.id.tv_gift_price);
             mGiftIv = itemView.findViewById(R.id.iv_gift_gift_icon);
 
         }

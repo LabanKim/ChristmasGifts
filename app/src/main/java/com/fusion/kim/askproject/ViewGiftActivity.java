@@ -42,9 +42,6 @@ public class ViewGiftActivity extends AppCompatActivity {
     private ProgressBar mLoadingDetailsPB;
 
     private ImageView mImageOneIv, mImageTwoIv, mImageThreeIv;
-
-    private double amount;
-
     private ProgressDialog mProgress;
 
     private String imageOne = null, imageTwo = null, imageThree = null;
@@ -101,25 +98,6 @@ public class ViewGiftActivity extends AppCompatActivity {
                 .child(personID).child(giftKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
-                FirebaseDatabase.getInstance().getReference().child("PeopleList")
-                        .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                        .child(getIntent().getStringExtra("personID")).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                        amount = dataSnapshot.child("totalAmount").getValue(Double.class);
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-
-                Toast.makeText(ViewGiftActivity.this, "Amount: " + amount, Toast.LENGTH_SHORT).show();
-
 
                 Picasso.get().load(getIntent().getStringExtra("imageOne"))
                     .into(mImageOneIv, new Callback() {
@@ -254,7 +232,7 @@ public class ViewGiftActivity extends AppCompatActivity {
     private void updateGift() {
 
         String giftName = mGifNameInput.getText().toString().trim();
-        String priceString = mPriceInput.getText().toString().trim();
+        final String priceString = mPriceInput.getText().toString().trim();
         String desc = mDescInput.getText().toString();
 
         final Boolean boughtState = mBoughtSwitch.isChecked();
@@ -274,7 +252,7 @@ public class ViewGiftActivity extends AppCompatActivity {
 
             mUpdatingPD.show();
 
-            Map giftMap = new HashMap();
+            final Map giftMap = new HashMap();
             giftMap.put("giftName", giftName);
             giftMap.put("giftPrice", Double.parseDouble(priceString));
             giftMap.put("description", desc);
@@ -283,76 +261,28 @@ public class ViewGiftActivity extends AppCompatActivity {
             giftMap.put("imageTwo", imageTwo);
             giftMap.put("imageThree", imageThree);
 
-            if (boughtState){
 
-                amount += Double.parseDouble(priceString);
-
-            }
-
-            mGiftsRef.setValue(giftMap)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+            mGiftsRef.setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
 
                     if (task.isSuccessful()){
 
-                        if (boughtState){
-
-                            FirebaseDatabase.getInstance().getReference().child("PeopleList")
-                                    .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"))
-                                    .child("bought").setValue(boughtState).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-
-                                    if (task.isSuccessful()){
-
-
-                                        FirebaseDatabase.getInstance().getReference().child("PeopleList")
-                                                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                                .child(getIntent().getStringExtra("personID"))
-                                                .child("totalAmount").setValue(amount)
-                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-
-                                                        if (task.isSuccessful()){
-
-                                                            mUpdatingPD.dismiss();
-
-                                                            Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
-
-                                                            Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
-                                                            mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
-                                                            mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
-                                                            startActivity(mainIntent);
-                                                            finish();
-
-
-
-                                                        } else {
-
-                                                            Toast.makeText(ViewGiftActivity.this, "Failed Update Amount", Toast.LENGTH_LONG).show();
-
-                                                        }
-
-                                                    }
-                                                });
-
-                                    } else {
-
-                                        Toast.makeText(ViewGiftActivity.this, "Failed to update gift. Try Again", Toast.LENGTH_LONG).show();
-
-                                    }
-
-                                }
-                            });
-
-                        }
-
-                    } else {
                         mUpdatingPD.dismiss();
 
-                        Toast.makeText(ViewGiftActivity.this, "Failed to update gift. Try Again", Toast.LENGTH_LONG).show();
+                        Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
+
+                        Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
+                        mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                        mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                        startActivity(mainIntent);
+                        finish();
+
+
+                    } else {
+
+                        Toast.makeText(ViewGiftActivity.this, "Failed Update Amount", Toast.LENGTH_LONG).show();
+
                     }
 
                 }

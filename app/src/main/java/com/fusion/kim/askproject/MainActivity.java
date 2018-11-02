@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity
     private SharedPreferences mQuerySp;
 
 
-    private  double mTotalCost = 0;
+    private  double mTotalCost = 0, mBoughtCost = 0;
 
     private Query query;
 
@@ -124,6 +124,132 @@ public class MainActivity extends AppCompatActivity
 
         mItemsCoutnLayout = findViewById(R.id.layout_general_items_count);
 
+        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+
+                            final String key = snapshot.getKey().toString();
+
+                            FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                                    .child(key).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                    for (DataSnapshot snapshot1 : dataSnapshot.getChildren()){
+
+                                        final String key2 = snapshot1.getKey().toString();
+
+                                        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                                                .child(key).child(key2).addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                mTotalCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+
+                                                boolean bought = dataSnapshot.child("bought").getValue(Boolean.class);
+
+                                                if (bought){
+
+                                                    mBoughtCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+
+                                                }
+
+                                                mGeneralTotalCostTv.setText("$" + mBoughtCost +"/$" + mTotalCost);
+
+
+                                                Log.e("Retrieved String", dataSnapshot.child("giftPrice").getValue(Double.class).toString());
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+
+                                            }
+                                        });
+
+                                    }
+
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
+        mPeopleListRef.child("PeopleList")
+                .child(mAuth.getCurrentUser().getUid())
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        if (!dataSnapshot.hasChildren()){
+
+                            mNoItemsTv.setVisibility(View.VISIBLE);
+                            mItemsCoutnLayout.setVisibility(View.GONE);
+
+                        } else {
+
+                            mNoItemsTv.setVisibility(View.GONE);
+                            mItemsCoutnLayout.setVisibility(View.VISIBLE);
+
+                            int boughtItems = 0;
+
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                Person person = snapshot.getValue(Person.class);
+
+                                mTotalCost += person.getTotalAmount();
+
+                                if (person.isBought()){
+
+                                    boughtItems += 1;
+
+                                }
+                            }
+
+                            mGeneralBoughtTv.setText(boughtItems + "/" + (int) dataSnapshot.getChildrenCount() + " gifts bought");
+
+                            double progress = ((double) boughtItems / (double) (int) dataSnapshot.getChildrenCount()) * 100;
+
+                            if (progress == 0){
+
+                                mBuyingProcess.setBackground(getResources().getDrawable(R.drawable.custom_progress_background));
+
+                            } else if (progress > 90){
+
+                                mBuyingProcess.setProgress((int) progress);
+                                mBuyingProcess.setBackgroundResource(0);
+                                mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal));
+
+                            } else {
+                                mBuyingProcess.setProgress((int) progress);
+                                mBuyingProcess.setBackgroundResource(0);
+                            }
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -145,64 +271,6 @@ public class MainActivity extends AppCompatActivity
         mTotalCost = 0;
 
         mAuth.addAuthStateListener(mAuthListener);
-
-        mPeopleListRef.child("PeopleList")
-                .child(mAuth.getCurrentUser().getUid())
-                .addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                if (!dataSnapshot.hasChildren()){
-
-                    mNoItemsTv.setVisibility(View.VISIBLE);
-                    mItemsCoutnLayout.setVisibility(View.GONE);
-
-
-
-                } else {
-
-                    mNoItemsTv.setVisibility(View.GONE);
-                    mItemsCoutnLayout.setVisibility(View.VISIBLE);
-
-                    int boughtItems = 0;
-
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                        Person person = snapshot.getValue(Person.class);
-
-                        mTotalCost += person.getTotalAmount();
-
-                        if (person.isBought()){
-
-                            boughtItems += 1;
-
-                        }
-                    }
-
-                    mGeneralTotalCostTv.setText("$" + mTotalCost);
-                    mGeneralBoughtTv.setText(boughtItems + "/" + (int) dataSnapshot.getChildrenCount() + " gifts bought");
-
-                    int progress = (boughtItems / (int) dataSnapshot.getChildrenCount()) * 100;
-
-                    if (progress > 90){
-
-                        mBuyingProcess.setProgress(progress);
-                        mBuyingProcess.setBackgroundColor(getResources().getColor(R.color.colorProgressGreen));
-                    } else {
-                        mBuyingProcess.setProgress(progress);
-                        mBuyingProcess.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
-                    }
-
-                }
-
-                mLoadingPeoplePb.setVisibility(View.GONE);
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
 
 
         if (mQuerySp.getString("sort", "").equals("name") ){
@@ -338,6 +406,8 @@ public class MainActivity extends AppCompatActivity
                         return true;
                     }
                 });
+
+                mLoadingPeoplePb.setVisibility(View.GONE);
 
             }
 

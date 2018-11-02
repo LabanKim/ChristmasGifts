@@ -14,7 +14,7 @@
         android:textSize="20sp"
         android:background="@drawable/red_circle"
         tools:text="L"
-        android:paddingHorizontal="20dp"
+        android:paddingHorizontal="18dp"
         android:paddingVertical="10dp"
         android:layout_margin="10dp"
         android:layout_centerVertical="true"/>
