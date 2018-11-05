@@ -40,6 +40,8 @@ import id.zelory.compressor.Compressor;
 
 public class AddGiftActivity extends AppCompatActivity {
 
+    // create global member variables
+
     private DatabaseReference mGiftsRef;
     private FirebaseAuth mAuth;
 
@@ -68,7 +70,10 @@ public class AddGiftActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_gift);
 
+        // Set the title of the action bar of the activity
         getSupportActionBar().setTitle("Add a Gift");
+
+        //initialize the variables accordingly
 
         mAuth = FirebaseAuth.getInstance();
         mGiftsRef = FirebaseDatabase.getInstance().getReference().child("GiftsList")
@@ -88,6 +93,7 @@ public class AddGiftActivity extends AppCompatActivity {
         mImageThreeIv = findViewById(R.id.image_three);
 
 
+        //Default image to be uploaded in case the user does not select an image
         defaultUri = Uri.parse("android.resource://com.fusion.kim.askproject/" + R.drawable.placeholder_image_logo);
 
 
@@ -96,6 +102,9 @@ public class AddGiftActivity extends AppCompatActivity {
         mAddingPD.setMessage("Processing...");
         mAddingPD.setCancelable(false);
 
+
+        /*Load person data for purposes of re-writing later when adding a gift so as to avoid accidental
+        deletion of data*/
         FirebaseDatabase.getInstance().getReference().child("PeopleList")
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .child(getIntent().getStringExtra("personID")).addValueEventListener(new ValueEventListener() {
@@ -112,12 +121,15 @@ public class AddGiftActivity extends AppCompatActivity {
             }
         });
 
+        //add onClickListener to the first image holder to open gallery and select an image
         mImageOneIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                //type = 1 means that the request to open the gallery came from clicking on the first image
                 type = 1;
 
+                //configure and start the activity to open gallery
                 CropImage.activity()
                         .setAspectRatio(1,1)
                         .setGuidelines(CropImageView.Guidelines.ON)
@@ -126,13 +138,15 @@ public class AddGiftActivity extends AppCompatActivity {
             }
         });
 
-
+        //add onClickListener to the second image holder to open gallery and select an image
         mImageTwoIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                //type = 2 means that the request to open the gallery came from clicking on the second image
                 type = 2;
 
+                //configure and start the activity to open gallery
                 CropImage.activity()
                         .setAspectRatio(1,1)
                         .setGuidelines(CropImageView.Guidelines.ON)
@@ -141,12 +155,15 @@ public class AddGiftActivity extends AppCompatActivity {
             }
         });
 
+        //add onClickListener to the third image holder to open gallery and select an image
         mImageThreeIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                //type = 3 means that the request to open the gallery came from clicking on the third image
                 type = 3;
 
+                //configure and start the activity to open gallery
                 CropImage.activity()
                         .setAspectRatio(1,1)
                         .setGuidelines(CropImageView.Guidelines.ON)
@@ -182,14 +199,17 @@ public class AddGiftActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //method to handle uploading data about a gift and images
     private void saveGift() {
 
+        //retrieve user input from the input fields
         final String giftName = mGifNameInput.getText().toString().trim();
         final String priceString = mPriceInput.getText().toString().trim();
         final String desc = mDescInput.getText().toString();
 
         final Boolean boughtState = mBoughtSwitch.isChecked();
 
+        //validate that the user has provided input and if not throw an error
         if (TextUtils.isEmpty(giftName)) {
             mGifNameInput.setError("Kindly enter gift name");
             return;
@@ -200,18 +220,21 @@ public class AddGiftActivity extends AppCompatActivity {
             return;
         }
 
+        //set the default image to the first image placeholder if the user has not selected any image
         if (mImageOneResultUri == null){
 
             mImageOneResultUri = defaultUri;
 
         }
 
+         //set the default image to the second image placeholder if the user has not selected any image
         if (mImageTwoResultUri == null){
 
             mImageTwoResultUri = defaultUri;
 
         }
 
+         //set the default image to the third image placeholder if the user has not selected any image
         if (mImageThreeResultUri == null){
 
             mImageThreeResultUri = defaultUri;
@@ -220,56 +243,72 @@ public class AddGiftActivity extends AppCompatActivity {
 
         if (!TextUtils.isEmpty(giftName) && !TextUtils.isEmpty(priceString)) {
 
+            //start uploading gift data
             mAddingPD.show();
 
             final String giftKey = mGiftsRef.push().getKey().toString().trim();
 
+            //add gift data to a hash map for bulk uploading to firebase
             giftMap = new HashMap();
             giftMap.put("giftName", giftName);
             giftMap.put("giftPrice", Double.parseDouble(priceString));
             giftMap.put("description", desc);
             giftMap.put("bought", boughtState);
 
+            //upload the first image to firebase
             mImagesStorage.child(giftKey).child("image1").putFile(mImageOneResultUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
+                    //if upload is successful, start uploading second image
                     if (task.isSuccessful()){
 
+                        //retrieve the path where the image is stored in firebase
                         final String imageOneDownloadUrl = task.getResult().getDownloadUrl().toString();
                         giftMap.put("imageOne", imageOneDownloadUrl);
 
 
+                        //start uploading second image
                         mImagesStorage.child(giftKey).child("image2").putFile(mImageTwoResultUri)
                                 .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                                     @Override
                                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
 
+                                        //if upload is successful, start uploading third image
                                         if (task.isSuccessful()){
 
+                                            //retrieve the path where the image is stored in firebase
                                             final String imageTwoDownloadUrl = task.getResult().getDownloadUrl().toString();
                                             giftMap.put("imageTwo", imageTwoDownloadUrl);
 
+                                            //start uploading tird image
                                             mImagesStorage.child(giftKey).child("image3").putFile(mImageThreeResultUri)
                                                     .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                                                         @Override
                                                         public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
+                                                            //if upload is successful, start uploading second image
                                                             if (task.isSuccessful()){
 
+                                                                //retrieve the path where the image is stored in firebase
                                                                 final String imageThreeDownloadUrl = task.getResult().getDownloadUrl().toString();
                                                                 giftMap.put("imageThree", imageThreeDownloadUrl);
 
+                                                                //start uploading gift data
                                                                 mGiftsRef.child(giftKey).setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                     @Override
                                                                     public void onComplete(@NonNull Task<Void> task) {
 
+                                                                        //if upload of the gift data was successful
                                                                         if (task.isSuccessful()){
 
+                                                                            //check if the gift not bought
                                                                             if (!boughtState){
 
                                                                                 mAddingPD.dismiss();
+
+                                                                                //all the uploads are finished, send the user to the list of gifts activity
 
                                                                                 Intent mainIntent = new Intent(AddGiftActivity.this, GiftsListActivity.class);
                                                                                 mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
@@ -279,24 +318,30 @@ public class AddGiftActivity extends AppCompatActivity {
 
                                                                             } else {
 
+                                                                                //if the gift is selected as bought then update the bought status in the person data
+
                                                                                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("PeopleList")
                                                                                         .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                                                                         .child(getIntent().getStringExtra("personID"));
 
+                                                                                //create a hashmap to hold data about the person who we are adding the gift to
                                                                                 Map map = new HashMap();
                                                                                 map.put("bought", true);
                                                                                 map.put("deadline", deadline);
                                                                                 map.put("personName", getIntent().getStringExtra("personName"));
 
 
+                                                                                //upload the data to the person
                                                                                 ref.setValue(map).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                                     @Override
                                                                                     public void onComplete(@NonNull Task<Void> task) {
 
+                                                                                        //if the upload was successful
                                                                                         if (task.isSuccessful()){
 
                                                                                             mAddingPD.dismiss();
 
+                                                                                            //all the uploads are finished, send the user to the list of gifts activity
                                                                                             Intent mainIntent = new Intent(AddGiftActivity.this, GiftsListActivity.class);
                                                                                             mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                                                                                             mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
@@ -364,20 +409,24 @@ public class AddGiftActivity extends AppCompatActivity {
     }
 
 
+    //Retrieve the results of the gallery activity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
 
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
 
+            //if the result code is correct proceed to retrieve the results
             if (resultCode == RESULT_OK) {
 
+                //if the request that opened the gallery was from first image
                 if (type == 1){
 
                     mImageOneResultUri = result.getUri();
 
                     File thumbPath = new File(mImageOneResultUri.getPath());
 
+                    //compress the image
                     try {
                         mCompressedImageBitmapOne = new Compressor(AddGiftActivity.this)
                                 .setMaxWidth(200)
@@ -393,11 +442,12 @@ public class AddGiftActivity extends AppCompatActivity {
                     }
 
                 } else if (type == 2){
-
+                    //if the request that opened the gallery was from second image
                     mImageTwoResultUri = result.getUri();
 
                     File thumbPath = new File(mImageTwoResultUri.getPath());
 
+                    //compress the image
                     try {
                         mCompressedImageBitmapTwo = new Compressor(AddGiftActivity.this)
                                 .setMaxWidth(200)
@@ -414,10 +464,12 @@ public class AddGiftActivity extends AppCompatActivity {
 
                 } else if (type == 3){
 
+                    //if the request that opened the gallery was from third image
                     mImageThreeResultUri = result.getUri();
 
                     File thumbPath = new File(mImageThreeResultUri.getPath());
 
+                    //compress the image
                     try {
                         mCompressedImageBitmapThree = new Compressor(AddGiftActivity.this)
                                 .setMaxWidth(200)

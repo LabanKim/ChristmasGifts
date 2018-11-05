@@ -32,6 +32,7 @@ import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
+    //declare member variables
     private EditText mEmailInput, mPasswordInput;
     private TextView mForgotPassTv, mSignUpTv;
     private Button mLoginBtn;
@@ -45,6 +46,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        //initialize member variables
+
         mAuth = FirebaseAuth.getInstance();
 
         mEmailInput = findViewById(R.id.input_login_email);
@@ -53,6 +56,7 @@ public class LoginActivity extends AppCompatActivity {
         mForgotPassTv = findViewById(R.id.tv_forgot_password);
         mSignUpTv = findViewById(R.id.tv_sign_up);
 
+        //add click listener to open activity to reset password
         mForgotPassTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,6 +72,7 @@ public class LoginActivity extends AppCompatActivity {
         mLoginPD.setMessage("Please wait while we log you in...");
         mLoginPD.setCancelable(false);
 
+        //add click listener to open perform login
         mLoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,6 +80,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        //add click listener to open activity to sign up
         mSignUpTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -84,8 +90,10 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    //method to perform login
     private void performLogin() {
 
+        //retrieve the user input
         final String email = mEmailInput.getText().toString().trim();
         final String pass = mPasswordInput.getText().toString().trim();
 
@@ -107,14 +115,17 @@ public class LoginActivity extends AppCompatActivity {
 
             mLoginPD.show();
 
+            //send request to firebase authentication to signin using email and pasword
             mAuth.signInWithEmailAndPassword(email, pass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
 
                     if (task.isSuccessful()){
 
+                        //the login was successful
                         mLoginPD.dismiss();
 
+                        //send the user to the main activity
                         Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(mainIntent);
@@ -122,8 +133,10 @@ public class LoginActivity extends AppCompatActivity {
 
                     } else {
 
+                        //login was unsuccessful
                         mLoginPD.dismiss();
 
+                        //display the error
                         Toast.makeText(LoginActivity.this, "Failed to login. Please try again." + task.getException().getMessage(), Toast.LENGTH_LONG).show();
 
                     }

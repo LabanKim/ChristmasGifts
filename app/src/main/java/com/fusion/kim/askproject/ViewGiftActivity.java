@@ -32,6 +32,8 @@ import java.util.Map;
 
 public class ViewGiftActivity extends AppCompatActivity {
 
+    //declare member variables
+
     private DatabaseReference mGiftsRef;
     private FirebaseAuth mAuth;
 
@@ -51,12 +53,15 @@ public class ViewGiftActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_gift);
 
+        //initialize member variables
+
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Loading...");
         mProgress.setCancelable(false);
 
         mProgress.show();
 
+        //get data sent from the previous activity
         Bundle data = getIntent().getExtras();
         String giftName = data.getString("giftName");
         String description = data.getString("description");
@@ -66,6 +71,7 @@ public class ViewGiftActivity extends AppCompatActivity {
         String personID = data.getString("personID");
 
 
+        //set the title of the actionbar as the gift name
         getSupportActionBar().setTitle(giftName);
 
         mAuth = FirebaseAuth.getInstance();
@@ -93,12 +99,13 @@ public class ViewGiftActivity extends AppCompatActivity {
         mPriceInput.setText(String.valueOf(giftPrice));
         mDescInput.setText(description);
 
-
+        //retrieve and download images from firebase
         FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .child(personID).child(giftKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
+                //retrieve and set the first image to the imageview
                 Picasso.get().load(getIntent().getStringExtra("imageOne"))
                     .into(mImageOneIv, new Callback() {
                         @Override
@@ -116,6 +123,7 @@ public class ViewGiftActivity extends AppCompatActivity {
                         }
                     });
 
+                //retrieve and set the second image to the imageview
                 Picasso.get().load(getIntent().getStringExtra("imageTwo"))
                         .into(mImageTwoIv, new Callback() {
                             @Override
@@ -133,6 +141,7 @@ public class ViewGiftActivity extends AppCompatActivity {
                             }
                         });
 
+                //retrieve and set the third image to the imageview
                 Picasso.get().load(getIntent().getStringExtra("imageThree"))
                         .into(mImageThreeIv, new Callback() {
                             @Override
@@ -161,15 +170,19 @@ public class ViewGiftActivity extends AppCompatActivity {
             }
         });
 
+        //add click listener to the first image
         mImageOneIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                //send the user to view the image
                 Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
                 viewIntent.putExtra("image", getIntent().getStringExtra("imageOne"));
                 startActivity(viewIntent);
             }
         });
 
+        //add click listener to the second image
         mImageTwoIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -179,6 +192,7 @@ public class ViewGiftActivity extends AppCompatActivity {
             }
         });
 
+        //add click listener to the third image
         mImageThreeIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -188,12 +202,14 @@ public class ViewGiftActivity extends AppCompatActivity {
             }
         });
 
+        //check if the gift is bought or not
         if (bought){
 
-
+            //if the gift is bought set the bought switch to true
             mBoughtSwitch.setChecked(true);
 
         } else {
+            //if the gift is not bought set the bought switch to false
             mBoughtSwitch.setChecked(false);
         }
 
@@ -229,8 +245,10 @@ public class ViewGiftActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    //method to update data about the gift
     private void updateGift() {
 
+        //retrieve user input
         String giftName = mGifNameInput.getText().toString().trim();
         final String priceString = mPriceInput.getText().toString().trim();
         String desc = mDescInput.getText().toString();
@@ -252,6 +270,7 @@ public class ViewGiftActivity extends AppCompatActivity {
 
             mUpdatingPD.show();
 
+            //create a hashmap to store data about the gift
             final Map giftMap = new HashMap();
             giftMap.put("giftName", giftName);
             giftMap.put("giftPrice", Double.parseDouble(priceString));
@@ -263,6 +282,8 @@ public class ViewGiftActivity extends AppCompatActivity {
 
             if (boughtState){
 
+                //if the gift is bought then change the state ofv the person as bought
+
                 FirebaseDatabase.getInstance().getReference().child("PeopleList").child(mAuth.getCurrentUser().getUid())
                         .child(getIntent().getStringExtra("personID")).child("bought")
                         .setValue(true).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -271,16 +292,21 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                         if (task.isSuccessful()){
 
+                            //if the value change was successful then upload the hashmap
+
                             mGiftsRef.setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
 
                                     if (task.isSuccessful()){
 
+                                        //if the upload was successful
                                         mUpdatingPD.dismiss();
 
+                                        //display a success message to the user
                                         Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
 
+                                        //send the user to the gift list activity
                                         Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
                                         mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                                         mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
@@ -308,6 +334,7 @@ public class ViewGiftActivity extends AppCompatActivity {
 
             } else {
 
+                //if the gift is not bought then upload the data directly to firebase
                 mGiftsRef.setValue(giftMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -318,6 +345,7 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                             Toast.makeText(ViewGiftActivity.this, "Details Updated", Toast.LENGTH_LONG).show();
 
+                            //send the user to the gifts list activity
                             Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
                             mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                             mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
@@ -342,6 +370,7 @@ public class ViewGiftActivity extends AppCompatActivity {
     }
 
 
+    //override the back method to send data back to the previous activity through the intent
     @Override
     public void onBackPressed() {
         super.onBackPressed();

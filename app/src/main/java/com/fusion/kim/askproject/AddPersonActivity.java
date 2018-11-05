@@ -32,6 +32,8 @@ import java.util.Map;
 
 public class AddPersonActivity extends AppCompatActivity {
 
+    //declare member variables
+
     private FirebaseAuth mAuth;
     private DatabaseReference mPersonListRef;
 
@@ -50,11 +52,14 @@ public class AddPersonActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        //get the intent that opened this activity
         Intent intent = getIntent();
+        //retrieve the name of the person picked from contacts
         String contactName = intent.getStringExtra("contactName");
 
         mPersonNameInput = findViewById(R.id.input_person_name);
 
+        //check if the intent has a contact name
         if (intent.hasExtra("contactName")){
 
             getSupportActionBar().setTitle(contactName);
@@ -63,6 +68,7 @@ public class AddPersonActivity extends AppCompatActivity {
         }
 
 
+        //initialize memeber variables
         mAuth = FirebaseAuth.getInstance();
         mPersonListRef = FirebaseDatabase.getInstance().getReference().child("PeopleList")
                 .child(mAuth.getCurrentUser().getUid());
@@ -77,6 +83,7 @@ public class AddPersonActivity extends AppCompatActivity {
         mPickDateIv = findViewById(R.id.iv_pick_date);
 
 
+        //add onClickListener to show date picker
         mDeadlineTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,6 +94,7 @@ public class AddPersonActivity extends AppCompatActivity {
             }
         });
 
+        //add onClickListener to show date picker
         mPickDateIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,9 +136,10 @@ public class AddPersonActivity extends AppCompatActivity {
     }
 
 
-
+    //method to upload person data to firebase
     private void savePerson(){
 
+        //retrieve user input
         String name = mPersonNameInput.getText().toString().trim();
         String deadline = mDeadlineTv.getText().toString().trim();
 
@@ -151,20 +160,24 @@ public class AddPersonActivity extends AppCompatActivity {
 
             mAddingPD.show();
 
+            //create a hasmap to store data about the person
             Map personMap = new HashMap();
             personMap.put("personName", name);
             personMap.put("deadline", deadline);
             personMap.put("bought", false);
             personMap.put("totalAmount", 0);
 
+            //upload the hashmap to firebase which will write the data stored in it as children in the database
             mPersonListRef.push().setValue(personMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
 
+                    //if the upload was successful
                     if (task.isSuccessful()){
 
                         mAddingPD.dismiss();
 
+                        //send the user to the main activity
                         Intent mainIntent = new Intent(AddPersonActivity.this, MainActivity.class);
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(mainIntent);
@@ -185,6 +198,7 @@ public class AddPersonActivity extends AppCompatActivity {
 
     }
 
+    //method to popup datepicker
     public void showDatePicker() {
         final Calendar currentDate = Calendar.getInstance();
         mDate = Calendar.getInstance();
@@ -195,6 +209,8 @@ public class AddPersonActivity extends AppCompatActivity {
 
                 String day = "";
                 String month = "";
+
+                //format the date
 
                 int monthNew = monthOfYear + 1;
 
@@ -218,6 +234,7 @@ public class AddPersonActivity extends AppCompatActivity {
 
                 }
 
+                //set the picked date to the textview
                 mDeadlineTv.setText(year + "-" + month + "-" + day);
 
 

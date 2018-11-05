@@ -6,9 +6,11 @@ public class Person {
     private boolean bought;
     private double totalAmount;
 
+    // Empty constructor required by firebaseui
     public Person() {
     }
 
+    //constructor to initialize person data
     public Person(String personName, String deadline, boolean bought, double totalAmount) {
         this.personName = personName;
         this.deadline = deadline;

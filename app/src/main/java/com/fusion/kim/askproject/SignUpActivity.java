@@ -42,6 +42,8 @@ import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
 
+    //declare member variables
+
     private Button mSignUpBtn;
     private EditText mEmailInput, mPasswordInput, mConfPassword;
 
@@ -54,6 +56,8 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
+
+        //initialize member variables
 
         mAuth = FirebaseAuth.getInstance();
         mUserRef = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -72,11 +76,12 @@ public class SignUpActivity extends AppCompatActivity {
         mSignupPD.setIndeterminate(true);
 
 
-
+        //add clock listener to the signup button
         mSignUpBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                //retrieve user input
                 final String email = mEmailInput.getText().toString().trim();
                 final String pass = mPasswordInput.getText().toString().trim();
                 final String confPass = mPasswordInput.getText().toString().trim();
@@ -114,25 +119,31 @@ public class SignUpActivity extends AppCompatActivity {
 
                     mSignupPD.show();
 
+                    //send request to creat a user using email and password
                     mAuth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
 
                             if (task.isSuccessful()){
+                                //creating the user was successful
 
+                                //create a hashmap to store user details
                                 Map userMap = new HashMap();
                                 userMap.put("emailAddress", email);
                                 userMap.put("password", pass);
 
+                                //upload the hashmap to firebase
                                 mUserRef.child(task.getResult().getUser().getUid()).
                                         setValue(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
 
                                         if (task.isSuccessful()){
+                                            //upload was successful
 
                                             mSignupPD.dismiss();
 
+                                            //send the user to the main activity
                                             Intent mainIntent = new Intent(SignUpActivity.this, MainActivity.class);
                                             mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                             startActivity(mainIntent);
@@ -144,6 +155,7 @@ public class SignUpActivity extends AppCompatActivity {
                                 });
 
                             } else {
+                                //upload failed
 
                                 mSignupPD.dismiss();
 

@@ -48,6 +48,7 @@ import com.google.firebase.database.ValueEventListener;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    //declare member variables
     private RecyclerView mPeopleRv;
     private TextView mNoItemsTv, mGeneralTotalCostTv, mGeneralBoughtTv;
     private RelativeLayout mItemsCoutnLayout;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity
     private Uri uriContact;
     private String contactID;
 
+    //declare a shared preference insatnce
     private SharedPreferences mQuerySp;
 
 
@@ -78,8 +80,11 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //initialize the shared preference which will store how the user prefers to sort the list of people
         mQuerySp = getSharedPreferences("queryPreference",MODE_PRIVATE);
 
+
+        //initialize all the other member variables
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -87,6 +92,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
+                //check if there is a user logged in. If not then send the user to login activity
                 if (mAuth.getCurrentUser() == null){
 
                     Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
@@ -101,6 +107,7 @@ public class MainActivity extends AppCompatActivity
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null){
 
+            //check if there is a user logged in. If not then send the user to login activity
             Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
             loginIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(loginIntent);
@@ -127,11 +134,14 @@ public class MainActivity extends AppCompatActivity
 
         mItemsCoutnLayout = findViewById(R.id.layout_general_items_count);
 
+        //retrieve the total price of all the gifts of all the users
         FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
+                        //loop through the datasnapshot to get deeper into the firebase root till you
+                        //reach the desired node and retrieve the gift price
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()){
 
                             final String key = snapshot.getKey().toString();
@@ -150,18 +160,24 @@ public class MainActivity extends AppCompatActivity
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
 
+                                                //check if this node has children, if yes proceed to retrieve the prices
                                                 if (dataSnapshot.hasChildren()){
 
+                                                    //for each price, add it to the general toatal price
                                                     mTotalCost += dataSnapshot.child("giftPrice").getValue(Double.class);
 
+                                                    //retrive the bought state of the price
                                                     boolean bought = dataSnapshot.child("bought").getValue(Boolean.class);
 
+                                                    //check if the gift is bought
                                                     if (bought){
 
+                                                        //if bought, add the price to the total price of bought gifts
                                                         mBoughtCost += dataSnapshot.child("giftPrice").getValue(Double.class);
 
                                                     }
 
+                                                    //set the price to display in the textview
                                                     mGeneralTotalCostTv.setText("$" + mBoughtCost +"/$" + mTotalCost);
 
 
@@ -199,6 +215,7 @@ public class MainActivity extends AppCompatActivity
                 });
 
 
+        //check if there any people
         mPeopleListRef.child("PeopleList")
                 .child(mAuth.getCurrentUser().getUid())
                 .addValueEventListener(new ValueEventListener() {
@@ -207,16 +224,21 @@ public class MainActivity extends AppCompatActivity
 
                         if (!dataSnapshot.hasChildren()){
 
+                            //if there are no people then display a message saying so
                             mNoItemsTv.setVisibility(View.VISIBLE);
+                            //hide the bar at the bottom that shows total price and progress
                             mItemsCoutnLayout.setVisibility(View.GONE);
 
                         } else {
 
+                            //if there are people then hide the message
                             mNoItemsTv.setVisibility(View.GONE);
+                            //display the bar at the bottom that shows total price and progress
                             mItemsCoutnLayout.setVisibility(View.VISIBLE);
 
                             int boughtItems = 0;
 
+                            //loop to increment the number of bought items
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 Person person = snapshot.getValue(Person.class);
 
@@ -228,8 +250,10 @@ public class MainActivity extends AppCompatActivity
                                 }
                             }
 
+                            //set the text to display the number of bought items
                             mGeneralBoughtTv.setText(boughtItems + "/" + (int) dataSnapshot.getChildrenCount() + " gifts bought");
 
+                            //calculate the progress of bought items
                             double progress = ((double) boughtItems / (double) (int) dataSnapshot.getChildrenCount()) * 100;
 
                             if (progress == 0){
@@ -275,37 +299,45 @@ public class MainActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
 
+        //add listener to listen for authentication changes within the app i.e user logout
         mAuth.addAuthStateListener(mAuthListener);
 
 
+        //retrieve the preference of sorting the list
         if (mQuerySp.getString("sort", "").equals("name") ){
 
+            //sort by name
             query = mPeopleListRef.child("PeopleList")
                     .child(mAuth.getCurrentUser().getUid()).orderByChild("personName").limitToLast(50);
 
         } else if (mQuerySp.getString("sort", "").equals("notBought")){
 
+            //sort by not bought items
             query = mPeopleListRef.child("PeopleList")
                     .child(mAuth.getCurrentUser().getUid()).orderByChild("bought").limitToLast(50);
 
         } else {
 
+            //default sorting
             query = mPeopleListRef.child("PeopleList")
                     .child(mAuth.getCurrentUser().getUid()).orderByChild("name").limitToLast(50);
 
         }
 
 
+        //recycler options for the adapter
         FirebaseRecyclerOptions<Person> options =
                 new FirebaseRecyclerOptions.Builder<Person>()
                         .setQuery(query, Person.class)
                         .setLifecycleOwner(this)
                         .build();
 
+        //adapter for the recyclerview
         FirebaseRecyclerAdapter<Person, PeopleViewHolder> adapter = new FirebaseRecyclerAdapter<Person, PeopleViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull PeopleViewHolder holder, final int position, @NonNull final Person model) {
 
+                //set the data to display
                 holder.mNameTv.setText(model.getPersonName());
                 holder.mInitialTv.setText(String.valueOf(model.getPersonName().charAt(0)));
 
@@ -320,6 +352,7 @@ public class MainActivity extends AppCompatActivity
 
                 }
 
+                //click listener to open the list of gifts associated with the person
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -332,6 +365,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
 
+                //long click listener to pop up a dialog of options
                 holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
@@ -346,7 +380,12 @@ public class MainActivity extends AppCompatActivity
                                         // The 'which' argument contains the index position
                                         // of the selected item
 
+                                        //check which item was clicked
+
                                         if (options[which].equals(options[1])){
+
+
+                                            //item at pos 1 == delete
 
                                             final ProgressDialog progress = new ProgressDialog(MainActivity.this);
                                             progress.setMessage("Removing...");
@@ -354,12 +393,15 @@ public class MainActivity extends AppCompatActivity
 
                                             progress.show();
 
+                                            //remove the gifts of the person from firebase
                                             FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
                                                     .child(getRef(position).getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
 
                                                     if (task.isSuccessful()){
+
+                                                        //if removal was successful then remove the person
 
                                                         mPeopleListRef.child("PeopleList").child(mAuth.getCurrentUser().getUid())
                                                                 .child(getRef(position).getKey())
@@ -369,12 +411,14 @@ public class MainActivity extends AppCompatActivity
 
                                                                 if (task.isSuccessful()){
 
+                                                                    //removal was a success
                                                                     progress.dismiss();
 
                                                                     Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
 
                                                                 } else {
 
+                                                                    //removal failed
                                                                     progress.dismiss();
 
                                                                     Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
@@ -395,6 +439,9 @@ public class MainActivity extends AppCompatActivity
 
 
                                         } else if (options[which].equals(options[0])){
+
+                                            //item at pos 0 == edit
+                                            //send the user to edit the person
 
                                             Intent editIntent = new Intent(MainActivity.this, EditPersonActivity.class);
                                             editIntent.putExtra("personName", model.getPersonName());
@@ -423,7 +470,9 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
+        //activate the adapter
         adapter.startListening();
+        //set the adapter to the recyclerview
         mPeopleRv.setAdapter(adapter);
 
 
@@ -497,6 +546,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    //method to pop up a dialog for choosing how to add a person
     private void showAddPersonDialog(){
 
         final String [] options = {"From Contacts", "Add Manually"};
@@ -511,9 +561,11 @@ public class MainActivity extends AppCompatActivity
 
                 if (options[which].equals(options[1])){
 
+                    //pos 1 == add manually
                     startActivity(new Intent(MainActivity.this, AddPersonActivity.class));
 
                 } else if (options[which].equals(options[0])){
+                    //pos 0 == pick from contacts
 
                     // using native contacts selection
                     // Intent.ACTION_PICK = Pick an item from the data, returning what was selected.
@@ -528,6 +580,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    //method to pop up dialog to pick how to sort the list
     private void showShortDialog(){
 
         final String [] options = {"Name", "Not Bought"};
@@ -575,8 +628,10 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    //method to send the user to contacts list to pick a person
     private void retrieveContactName() {
 
+        //declare and initialize to null variable to hold the name of the picked person
         String contactName = null;
 
         // querying contact data store
@@ -594,8 +649,10 @@ public class MainActivity extends AppCompatActivity
 
         Log.d(TAG, "Contact Name: " + contactName);
 
+        //check if the name was picked successfully
         if (!TextUtils.isEmpty(contactName)){
 
+            //send the user to save pick deadline and save the person
             Intent nextIntent = new Intent(MainActivity.this, AddPersonActivity.class);
             nextIntent.putExtra("contactName", contactName);
             startActivity(nextIntent);
@@ -609,6 +666,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    //view holder to link the recylcerview with the views to be displayed in a row
     private class PeopleViewHolder extends RecyclerView.ViewHolder{
 
         private View mView;

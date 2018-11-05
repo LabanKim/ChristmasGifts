@@ -35,6 +35,7 @@ import com.google.firebase.database.ValueEventListener;
 
 public class GiftsListActivity extends AppCompatActivity {
 
+    //declare member variables
     private RecyclerView mGiftListRv;
     private TextView mNoGiftsTv, mTotalCostTv, mTotalBoughtTv, mPersonGiftNameTv;
     private RelativeLayout mTotalGiftsCountLayout;
@@ -46,18 +47,19 @@ public class GiftsListActivity extends AppCompatActivity {
 
     private double mTotalCostBought = 0, mTotalPrice = 0;
 
-    private String personID = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gifts_list);
 
+        //set up the back button on action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //set the title of the action bar to be the name of the person
         getSupportActionBar().setTitle(getIntent().getStringExtra("personName"));
 
-        personID = getIntent().getStringExtra("personID");
 
+        //initialize the member variables
         mGiftListRv = findViewById(R.id.rv_gifts_list);
         mNoGiftsTv = findViewById(R.id.tv_no_gifts_error);
         mTotalGiftsCountLayout = findViewById(R.id.layout_gifts_items_count);
@@ -78,41 +80,52 @@ public class GiftsListActivity extends AppCompatActivity {
                 .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"));
         mGiftListRef.keepSynced(true);
 
+        //check whether there are any gifts associated with the person
         mGiftListRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 if (!dataSnapshot.hasChildren()){
 
+                    //if there are no gifts, display a message saying so and hide the bar at the
+                    //botto, shoing total cost and buying progress bar
                     mNoGiftsTv.setVisibility(View.VISIBLE);
                     mTotalGiftsCountLayout.setVisibility(View.INVISIBLE);
 
                 } else {
 
+                    //if there are gifts, count the total gifts
                     int totalCount = (int) dataSnapshot.getChildrenCount();
 
                     int boughtItems = 0;
 
+                    //for eaxh gift, retrieve it's price
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Gift gift = snapshot.getValue(Gift.class);
 
                         mTotalPrice += gift.getGiftPrice();
 
+                        //if the gift is bought
                         if (gift.isBought()){
 
+                            //add the gift'd price to the bought gifts total cost
                             mTotalCostBought += gift.getGiftPrice();
+                            //increment the number of bought gifts
                             boughtItems += 1;
 
                         }
                     }
 
+                    //hide the no gifts message
                     mNoGiftsTv.setVisibility(View.GONE);
+                    //show the bar at the bottom showing the buying progress and total cost
                     mTotalGiftsCountLayout.setVisibility(View.VISIBLE);
                     mTotalBoughtTv.setText("Bought: " + boughtItems + "/" + totalCount);
 
                     mTotalCostTv.setText("$" + mTotalCostBought + "/$" + mTotalPrice );
                     mTotalBoughtTv.setText(boughtItems + "/" + totalCount + " gifts bought");
 
+                    //calculate the buying progress
                     double progress = ((double) boughtItems / (double) (int) dataSnapshot.getChildrenCount()) * 100;
 
                     if (progress == 0){
@@ -146,6 +159,7 @@ public class GiftsListActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        //set up the query to request data from the firebase reference specified
         Query query = mGiftListRef.limitToLast(50);
 
         FirebaseRecyclerOptions<Gift> options =
@@ -154,10 +168,12 @@ public class GiftsListActivity extends AppCompatActivity {
                         .setLifecycleOwner(this)
                         .build();
 
+        //set up the adapter to be used in the recyclerview to display the list of gifts
         FirebaseRecyclerAdapter<Gift, GiftsViewHolder> adapter = new FirebaseRecyclerAdapter<Gift, GiftsViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull GiftsViewHolder holder, final int position, @NonNull final Gift model) {
 
+                //set up data to display
                 holder.mGiftNameTv.setText(model.getGiftName());
                 holder.mGiftPriceTv.setText("$" + model.getGiftPrice());
 
@@ -171,11 +187,14 @@ public class GiftsListActivity extends AppCompatActivity {
 
                 }
 
+                //add click listener to the gift row and send the user to view/edit the gift
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
 
                         Intent giftsIntent = new Intent(GiftsListActivity.this, ViewGiftActivity.class);
+                        //add data to send to the next activity
+
                         giftsIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                         giftsIntent.putExtra("personName", getIntent().getStringExtra("personName"));
                         giftsIntent.putExtra("uniqueID", "giftItem");
@@ -193,13 +212,16 @@ public class GiftsListActivity extends AppCompatActivity {
                 });
 
 
+                // add long click listener to a gift row
                 holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
 
+                        //create an alert dialog builder
                         AlertDialog.Builder builder = new AlertDialog.Builder(GiftsListActivity.this);
-                        // Get the layout inflater
+                        // Add a message to the alert dialog
                         builder.setMessage("Are you sure you want to delete this gift?");
+                        //set the title of the alert dailog to be the name of the gift
                         builder.setTitle(model.getGiftName())
                                 .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
                                     @Override
@@ -211,24 +233,28 @@ public class GiftsListActivity extends AppCompatActivity {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
 
+                                        //set up a progress bar
                                         final ProgressDialog progress = new ProgressDialog(GiftsListActivity.this);
                                         progress.setMessage("Removing...");
                                         progress.setCancelable(false);
 
                                         progress.show();
 
+                                        //remove the gift from  firebase
                                         mGiftListRef.child(getRef(position).getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
 
                                                 if (task.isSuccessful()){
 
+                                                    //if the removal was successful
                                                     progress.dismiss();
 
                                                     Toast.makeText(GiftsListActivity.this, "Gift Deleted", Toast.LENGTH_LONG).show();
 
                                                 } else {
 
+                                                    //the removal was unsuccessful
                                                     progress.dismiss();
 
                                                     Toast.makeText(GiftsListActivity.this, "Failed to Delete Gift. Try Again", Toast.LENGTH_LONG).show();
@@ -248,6 +274,7 @@ public class GiftsListActivity extends AppCompatActivity {
 
             }
 
+            //inflate the viewholder of the adapter
             @Override
             public GiftsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
                 return new GiftsViewHolder(LayoutInflater.from(parent.getContext())
@@ -255,7 +282,9 @@ public class GiftsListActivity extends AppCompatActivity {
             }
         };
 
+        //activate the adapter to start listening for event changes in firebase
         adapter.startListening();
+        //set the adapter for the recycler view
         mGiftListRv.setAdapter(adapter);
 
     }
@@ -277,6 +306,7 @@ public class GiftsListActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_add_gift) {
 
+            //start activity to add a new gift
             Intent giftsIntent = new Intent(GiftsListActivity.this, AddGiftActivity.class);
             giftsIntent.putExtra("personID", getIntent().getStringExtra("personID"));
             giftsIntent.putExtra("personName", getIntent().getStringExtra("personName"));
@@ -290,6 +320,7 @@ public class GiftsListActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // A view holder to set up a row of the gifts list of the recycler view
     private class GiftsViewHolder extends RecyclerView.ViewHolder{
 
         private View mView;
@@ -307,6 +338,7 @@ public class GiftsListActivity extends AppCompatActivity {
         }
     }
 
+    //Override back method to make sure that the user goes back to the main activity and not exit the app
     @Override
     public void onBackPressed() {
         super.onBackPressed();

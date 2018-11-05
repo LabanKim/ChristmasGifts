@@ -3,6 +3,7 @@ package com.fusion.kim.askproject;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+// Activity to display info about the app and the developer
 public class AboutActivity extends AppCompatActivity {
 
     @Override

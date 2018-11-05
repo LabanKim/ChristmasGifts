@@ -32,6 +32,7 @@ import java.util.Map;
 
 public class EditPersonActivity extends AppCompatActivity {
 
+    //declare member variables
     private FirebaseAuth mAuth;
     private DatabaseReference mPersonListRef;
 
@@ -48,10 +49,14 @@ public class EditPersonActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_person);
 
+        //set up the back button in the action bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //set the title of the activity as the name of the person we are editing
         getSupportActionBar().setTitle(getIntent().getStringExtra("personName"));
 
+        //initialize the member variables
         mAuth = FirebaseAuth.getInstance();
+
         mPersonListRef = FirebaseDatabase.getInstance().getReference().child("PeopleList")
                 .child(mAuth.getCurrentUser().getUid()).child(getIntent().getStringExtra("personID"));
         mPersonListRef.keepSynced(true);
@@ -67,9 +72,11 @@ public class EditPersonActivity extends AppCompatActivity {
         mDeadlineTv = findViewById(R.id.tv_edit_deadline);
         mPickDateIv = findViewById(R.id.iv_edit_pick_date);
 
+        //set the tex of the deadline textfield as the date retrieved from the intent that opened this activity
         mDeadlineTv.setText(getIntent().getStringExtra("deadline"));
 
 
+        //add click listener to show date picker to the textview
         mDeadlineTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,6 +86,7 @@ public class EditPersonActivity extends AppCompatActivity {
             }
         });
 
+        //add click listener to show date picker to the calendar icon
         mPickDateIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -118,8 +126,10 @@ public class EditPersonActivity extends AppCompatActivity {
 
 
 
+    //method to upload and update the person data
     private void updatePerson(){
 
+        //retrieve user input
         String name = mPersonNameInput.getText().toString().trim();
         String deadline = mDeadlineTv.getText().toString().trim();
 
@@ -140,18 +150,22 @@ public class EditPersonActivity extends AppCompatActivity {
 
             mUpdatingPD.show();
 
+            //create a hashmap to store person data
             Map personMap = new HashMap();
             personMap.put("personName", name);
             personMap.put("deadline", deadline);
 
+            //upload hashmap to the firebase reference of the person to update the data
             mPersonListRef.setValue(personMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
 
                     if (task.isSuccessful()){
 
+                        //if the upate was successful
                         mUpdatingPD.dismiss();
 
+                        //send the user to the main activity
                         Intent mainIntent = new Intent(EditPersonActivity.this, MainActivity.class);
                         mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(mainIntent);
@@ -174,6 +188,8 @@ public class EditPersonActivity extends AppCompatActivity {
 
     }
 
+
+    //method to pop up date picker
     public void showDatePicker() {
         final Calendar currentDate = Calendar.getInstance();
         mDate = Calendar.getInstance();
@@ -185,6 +201,7 @@ public class EditPersonActivity extends AppCompatActivity {
                 String day = "";
                 String month = "";
 
+                //format the date
                 int monthNew = monthOfYear + 1;
 
                 if (dayOfMonth < 10){
@@ -207,6 +224,7 @@ public class EditPersonActivity extends AppCompatActivity {
 
                 }
 
+                //set the date to the textview
                 mDeadlineTv.setText(year + "-" + month + "-" + day);
 
 

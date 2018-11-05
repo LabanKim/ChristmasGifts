@@ -7,9 +7,11 @@ public class Gift {
     private boolean bought;
     private String imageOne, ImageTwo, imageThree;
 
+    // Empty constructor required by firebaseui
     public Gift() {
     }
 
+    //constructor to initialize gift data
     public Gift(String giftName, String description, double giftPrice, boolean bought, String imageOne, String imageTwo, String imageThree) {
         this.giftName = giftName;
         this.description = description;
