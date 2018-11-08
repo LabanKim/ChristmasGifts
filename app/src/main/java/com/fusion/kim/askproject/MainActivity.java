@@ -238,6 +238,8 @@ public class MainActivity extends AppCompatActivity
 
                             int boughtItems = 0;
 
+                            int totalItems = (int) dataSnapshot.getChildrenCount();
+
                             //loop to increment the number of bought items
                             for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                                 Person person = snapshot.getValue(Person.class);
@@ -251,10 +253,10 @@ public class MainActivity extends AppCompatActivity
                             }
 
                             //set the text to display the number of bought items
-                            mGeneralBoughtTv.setText(boughtItems + "/" + (int) dataSnapshot.getChildrenCount() + " gifts bought");
+                            mGeneralBoughtTv.setText(boughtItems + "/" + totalItems + " gifts bought");
 
                             //calculate the progress of bought items
-                            double progress = ((double) boughtItems / (double) (int) dataSnapshot.getChildrenCount()) * 100;
+                            double progress = calculateProgress(boughtItems, totalItems);
 
                             if (progress == 0){
 
@@ -682,6 +684,14 @@ public class MainActivity extends AppCompatActivity
             mInitialTv = itemView.findViewById(R.id.tv_name_initial);
 
         }
+    }
+
+    public static double calculateProgress(int boughtItems, int totalItems){
+
+        double progress = ((double) boughtItems / (double) totalItems) * 100;
+
+        return progress;
+
     }
 
 }

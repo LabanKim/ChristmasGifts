@@ -70,7 +70,6 @@ public class ViewGiftActivity extends AppCompatActivity {
         String giftKey = data.getString("giftKey");
         String personID = data.getString("personID");
 
-
         //set the title of the actionbar as the gift name
         getSupportActionBar().setTitle(giftName);
 
@@ -175,10 +174,16 @@ public class ViewGiftActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                //send the user to view the image
-                Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
-                viewIntent.putExtra("image", getIntent().getStringExtra("imageOne"));
-                startActivity(viewIntent);
+                try{
+                    //send the user to view the image
+                    Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
+                    viewIntent.putExtra("image", getIntent().getStringExtra("imageOne"));
+                    startActivity(viewIntent);
+
+                } catch (Exception e){
+                    System.err.println("Failed: "+ e.getLocalizedMessage());
+                }
+
             }
         });
 
@@ -186,9 +191,14 @@ public class ViewGiftActivity extends AppCompatActivity {
         mImageTwoIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
-                viewIntent.putExtra("image", getIntent().getStringExtra("imageTwo"));
-                startActivity(viewIntent);
+                try {
+                    Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
+                    viewIntent.putExtra("image", getIntent().getStringExtra("imageTwo"));
+                    startActivity(viewIntent);
+                } catch (Exception e){
+                    System.err.println("Failed: "+ e.getLocalizedMessage());
+                }
+
             }
         });
 
@@ -196,9 +206,17 @@ public class ViewGiftActivity extends AppCompatActivity {
         mImageThreeIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
-                viewIntent.putExtra("image", getIntent().getStringExtra("imageThree"));
-                startActivity(viewIntent);
+
+                try{
+
+                    Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
+                    viewIntent.putExtra("image", getIntent().getStringExtra("imageThree"));
+                    startActivity(viewIntent);
+
+                } catch (Exception e){
+                    System.err.println("Failed: "+ e.getLocalizedMessage());
+                }
+
             }
         });
 

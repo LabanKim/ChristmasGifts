@@ -15,12 +15,13 @@ import static org.junit.Assert.*;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class ExampleInstrumentedTest {
+public class ProgressCalculatorTest {
     @Test
-    public void useAppContext() {
-        // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+    public void testConvertFahrenheitToCelsius() {
+        double actual = MainActivity.calculateProgress(2, 5);
+        // expected value is 40
+        double expected = 40;
 
-        assertEquals("com.fusion.kim.askproject", appContext.getPackageName());
+        assertEquals("Progress calculation failed", expected, actual, 0.001);
     }
 }
