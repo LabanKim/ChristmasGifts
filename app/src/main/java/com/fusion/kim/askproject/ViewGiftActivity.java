@@ -67,7 +67,7 @@ public class ViewGiftActivity extends AppCompatActivity {
         String description = data.getString("description");
         double giftPrice = data.getDouble("giftPrice");
         boolean bought = data.getBoolean("bought");
-        String giftKey = data.getString("giftKey");
+        final String giftKey = data.getString("giftKey");
         String personID = data.getString("personID");
 
         //set the title of the actionbar as the gift name
@@ -110,6 +110,44 @@ public class ViewGiftActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess() {
 
+                            //retrieve and set the second image to the imageview
+                            Picasso.get().load(getIntent().getStringExtra("imageTwo"))
+                                    .into(mImageTwoIv, new Callback() {
+                                        @Override
+                                        public void onSuccess() {
+
+                                            //retrieve and set the third image to the imageview
+                                            Picasso.get().load(getIntent().getStringExtra("imageThree"))
+                                                    .into(mImageThreeIv, new Callback() {
+                                                        @Override
+                                                        public void onSuccess() {
+
+                                                            mProgress.dismiss();
+
+                                                        }
+
+                                                        @Override
+                                                        public void onError(Exception e) {
+
+                                                            mProgress.dismiss();
+
+                                                            Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
+
+                                                        }
+                                                    });
+
+                                        }
+
+                                        @Override
+                                        public void onError(Exception e) {
+
+                                            mProgress.dismiss();
+
+                                            Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
+
+                                        }
+                                    });
+
                         }
 
                         @Override
@@ -117,48 +155,10 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                             mProgress.dismiss();
 
-                            Toast.makeText(ViewGiftActivity.this, "Failed to load image "+ e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
 
                         }
                     });
-
-                //retrieve and set the second image to the imageview
-                Picasso.get().load(getIntent().getStringExtra("imageTwo"))
-                        .into(mImageTwoIv, new Callback() {
-                            @Override
-                            public void onSuccess() {
-
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-
-                                mProgress.dismiss();
-
-                                Toast.makeText(ViewGiftActivity.this, "Failed to load image "+ e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-
-                            }
-                        });
-
-                //retrieve and set the third image to the imageview
-                Picasso.get().load(getIntent().getStringExtra("imageThree"))
-                        .into(mImageThreeIv, new Callback() {
-                            @Override
-                            public void onSuccess() {
-
-                                mProgress.dismiss();
-
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-
-                                mProgress.dismiss();
-
-                                Toast.makeText(ViewGiftActivity.this, "Failed to load image "+ e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-
-                            }
-                        });
 
 
             }
@@ -178,6 +178,9 @@ public class ViewGiftActivity extends AppCompatActivity {
                     //send the user to view the image
                     Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
                     viewIntent.putExtra("image", getIntent().getStringExtra("imageOne"));
+                    viewIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                    viewIntent.putExtra("giftKey", giftKey);
+                    viewIntent.putExtra("imageName", "image1");
                     startActivity(viewIntent);
 
                 } catch (Exception e){
@@ -194,6 +197,9 @@ public class ViewGiftActivity extends AppCompatActivity {
                 try {
                     Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
                     viewIntent.putExtra("image", getIntent().getStringExtra("imageTwo"));
+                    viewIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                    viewIntent.putExtra("giftKey", giftKey);
+                    viewIntent.putExtra("imageName", "image2");
                     startActivity(viewIntent);
                 } catch (Exception e){
                     System.err.println("Failed: "+ e.getLocalizedMessage());
@@ -211,6 +217,9 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                     Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
                     viewIntent.putExtra("image", getIntent().getStringExtra("imageThree"));
+                    viewIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                    viewIntent.putExtra("giftKey", giftKey);
+                    viewIntent.putExtra("imageName", "image3");
                     startActivity(viewIntent);
 
                 } catch (Exception e){

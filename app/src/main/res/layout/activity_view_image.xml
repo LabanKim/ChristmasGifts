@@ -12,6 +12,31 @@
         android:layout_height="match_parent"
         android:background="#7effffff">
 
+        <LinearLayout
+            android:id="@+id/layout_edit_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/transparent_rect"
+            android:layout_margin="20dp"
+            android:paddingHorizontal="8dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_edit_white_18"
+                android:layout_marginVertical="6dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:text="Edit Image"
+                android:layout_gravity="center"
+                android:layout_marginLeft="10dp"/>
+
+        </LinearLayout>
+
         <ImageView
             android:id="@+id/iv_image_view"
             android:layout_width="match_parent"

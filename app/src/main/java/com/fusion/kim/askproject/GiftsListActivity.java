@@ -240,29 +240,36 @@ public class GiftsListActivity extends AppCompatActivity {
 
                                         progress.show();
 
-                                        //remove the gift from  firebase
-                                        mGiftListRef.child(getRef(position).getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
+                                        try {
 
-                                                if (task.isSuccessful()){
+                                            //remove the gift from  firebase
+                                            mGiftListRef.child(getRef(position).getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
 
-                                                    //if the removal was successful
-                                                    progress.dismiss();
+                                                    if (task.isSuccessful()){
 
-                                                    Toast.makeText(GiftsListActivity.this, "Gift Deleted", Toast.LENGTH_LONG).show();
+                                                        //if the removal was successful
+                                                        progress.dismiss();
 
-                                                } else {
+                                                        Toast.makeText(GiftsListActivity.this, "Gift Deleted", Toast.LENGTH_LONG).show();
 
-                                                    //the removal was unsuccessful
-                                                    progress.dismiss();
+                                                    } else {
 
-                                                    Toast.makeText(GiftsListActivity.this, "Failed to Delete Gift. Try Again", Toast.LENGTH_LONG).show();
+                                                        //the removal was unsuccessful
+                                                        progress.dismiss();
+
+                                                        Toast.makeText(GiftsListActivity.this, "Failed to Delete Gift. Try Again", Toast.LENGTH_LONG).show();
+
+                                                    }
 
                                                 }
+                                            });
 
-                                            }
-                                        });
+                                        } catch (Exception e){
+                                            Toast.makeText(GiftsListActivity.this, "Failed to delete gift. Try Again.", Toast.LENGTH_LONG).show();
+                                        }
+
 
                                     }
                                 })

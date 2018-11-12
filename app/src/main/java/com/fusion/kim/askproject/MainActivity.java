@@ -134,8 +134,25 @@ public class MainActivity extends AppCompatActivity
 
         mItemsCoutnLayout = findViewById(R.id.layout_general_items_count);
 
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
         //retrieve the total price of all the gifts of all the users
-        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -228,6 +245,7 @@ public class MainActivity extends AppCompatActivity
                             mNoItemsTv.setVisibility(View.VISIBLE);
                             //hide the bar at the bottom that shows total price and progress
                             mItemsCoutnLayout.setVisibility(View.GONE);
+                            mLoadingPeoplePb.setVisibility(View.GONE);
 
                         } else {
 
@@ -282,24 +300,6 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 });
-
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
 
         //add listener to listen for authentication changes within the app i.e user logout
         mAuth.addAuthStateListener(mAuthListener);
@@ -395,49 +395,55 @@ public class MainActivity extends AppCompatActivity
 
                                             progress.show();
 
-                                            //remove the gifts of the person from firebase
-                                            FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
-                                                    .child(getRef(position).getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
+                                            try {
 
-                                                    if (task.isSuccessful()){
+                                                //remove the gifts of the person from firebase
+                                                FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                                                        .child(getRef(position).getKey()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
 
-                                                        //if removal was successful then remove the person
+                                                        if (task.isSuccessful()){
 
-                                                        mPeopleListRef.child("PeopleList").child(mAuth.getCurrentUser().getUid())
-                                                                .child(getRef(position).getKey())
-                                                                .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                            @Override
-                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                            //if removal was successful then remove the person
 
-                                                                if (task.isSuccessful()){
+                                                            mPeopleListRef.child("PeopleList").child(mAuth.getCurrentUser().getUid())
+                                                                    .child(getRef(position).getKey())
+                                                                    .removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<Void> task) {
 
-                                                                    //removal was a success
-                                                                    progress.dismiss();
+                                                                    if (task.isSuccessful()){
 
-                                                                    Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
+                                                                        //removal was a success
+                                                                        progress.dismiss();
 
-                                                                } else {
+                                                                        Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
 
-                                                                    //removal failed
-                                                                    progress.dismiss();
+                                                                    } else {
 
-                                                                    Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
+                                                                        //removal failed
+                                                                        progress.dismiss();
+
+                                                                        Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
+
+                                                                    }
 
                                                                 }
+                                                            });
 
-                                                            }
-                                                        });
+                                                        } else {
 
-                                                    } else {
+                                                            Toast.makeText(MainActivity.this, "Failed to remove person's gifts", Toast.LENGTH_LONG).show();
 
-                                                        Toast.makeText(MainActivity.this, "Failed to remove person's gifts", Toast.LENGTH_LONG).show();
+                                                        }
 
                                                     }
+                                                });
 
-                                                }
-                                            });
+                                            } catch (Exception e){
+                                                Toast.makeText(MainActivity.this, "Failed to delete person. Try again.", Toast.LENGTH_LONG).show();
+                                            }
 
 
                                         } else if (options[which].equals(options[0])){
