@@ -166,7 +166,7 @@ public class ViewImageActivity extends AppCompatActivity {
                             final String imageDownloadUrl = task.getResult().getDownloadUrl().toString();
 
                             String imageNode = null;
-                            String imageName = getIntent().getStringExtra("imageName");
+                            final String imageName = getIntent().getStringExtra("imageName");
 
                             if (imageName.equals("image1")){
 
@@ -193,6 +193,58 @@ public class ViewImageActivity extends AppCompatActivity {
                                         progressDialog.dismiss();
 
                                         Toast.makeText(ViewImageActivity.this, "Image Updated Successfully", Toast.LENGTH_LONG).show();
+
+                                        Bundle data = getIntent().getExtras();
+
+                                        final double giftPrice = data.getDouble("giftPrice");
+                                        final boolean bought = data.getBoolean("bought");
+
+                                        if (imageName.equals("image1")){
+
+                                            Intent backIntent = new Intent(ViewImageActivity.this, ViewGiftActivity.class);
+                                            backIntent.putExtra("imageOne", imageDownloadUrl);
+                                            backIntent.putExtra("imageTwo", getIntent().getStringExtra("imageTwo"));
+                                            backIntent.putExtra("imageThree", getIntent().getStringExtra("imageThree"));
+                                            backIntent.putExtra("personID", data.getString("personID"));
+                                            backIntent.putExtra("giftKey", data.getString("giftKey"));
+                                            backIntent.putExtra("giftName", data.getString("giftName"));
+                                            backIntent.putExtra("description", data.getString("description"));
+                                            backIntent.putExtra("giftPrice", giftPrice);
+                                            backIntent.putExtra("bought", bought);
+                                            startActivity(backIntent);
+                                            finish();
+
+                                        } else if (imageName.equals("image2")){
+
+                                            Intent backIntent = new Intent(ViewImageActivity.this, ViewGiftActivity.class);
+                                            backIntent.putExtra("imageOne", getIntent().getStringExtra("imageOne"));
+                                            backIntent.putExtra("imageTwo", imageDownloadUrl);
+                                            backIntent.putExtra("imageThree", getIntent().getStringExtra("imageThree"));
+                                            backIntent.putExtra("personID", data.getString("personID"));
+                                            backIntent.putExtra("giftKey", data.getString("giftKey"));
+                                            backIntent.putExtra("giftName", data.getString("giftName"));
+                                            backIntent.putExtra("description", data.getString("description"));
+                                            backIntent.putExtra("giftPrice", giftPrice);
+                                            backIntent.putExtra("bought", bought);
+                                            startActivity(backIntent);
+                                            finish();
+
+                                        } else if (imageName.equals("image3")){
+
+                                            Intent backIntent = new Intent(ViewImageActivity.this, ViewGiftActivity.class);
+                                            backIntent.putExtra("imageOne", getIntent().getStringExtra("imageOne"));
+                                            backIntent.putExtra("imageTwo", getIntent().getStringExtra("imageTwo"));
+                                            backIntent.putExtra("imageThree", imageDownloadUrl);
+                                            backIntent.putExtra("personID", data.getString("personID"));
+                                            backIntent.putExtra("giftKey", data.getString("giftKey"));
+                                            backIntent.putExtra("giftName", data.getString("giftName"));
+                                            backIntent.putExtra("description", data.getString("description"));
+                                            backIntent.putExtra("giftPrice", giftPrice);
+                                            backIntent.putExtra("bought", bought);
+                                            startActivity(backIntent);
+                                            finish();
+
+                                        }
 
                                     } else {
 

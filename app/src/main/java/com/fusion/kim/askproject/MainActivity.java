@@ -62,13 +62,14 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_CODE_PICK_CONTACTS = 1;
     private Uri uriContact;
-    private String contactID;
 
     //declare a shared preference insatnce
     private SharedPreferences mQuerySp;
 
 
     private  double mTotalCost = 0, mBoughtCost = 0;
+
+    private int mTotalItems = 0, mBoughtItems = 0;
 
     private Query query;
 
@@ -115,9 +116,6 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        mTotalCost = 0;
-        mBoughtCost = 0;
-
         mPeopleListRef = FirebaseDatabase.getInstance().getReference();
 
         mPeopleRv = findViewById(R.id.rv_people_list);
@@ -150,6 +148,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        //Set all counts to zero at first
+        mTotalCost = 0;
+        mBoughtCost = 0;
+
+        mTotalItems = 0;
+        mBoughtItems = 0;
 
         //retrieve the total price of all the gifts of all the users
         FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -160,6 +164,8 @@ public class MainActivity extends AppCompatActivity
                         //loop through the datasnapshot to get deeper into the firebase root till you
                         //reach the desired node and retrieve the gift price
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+
+                            mTotalItems += snapshot.getChildrenCount();
 
                             final String key = snapshot.getKey().toString();
 
@@ -177,13 +183,14 @@ public class MainActivity extends AppCompatActivity
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
 
+
                                                 //check if this node has children, if yes proceed to retrieve the prices
                                                 if (dataSnapshot.hasChildren()){
 
                                                     //for each price, add it to the general toatal price
                                                     mTotalCost += dataSnapshot.child("giftPrice").getValue(Double.class);
 
-                                                    //retrive the bought state of the price
+                                                    //retrieve the bought state of the price
                                                     boolean bought = dataSnapshot.child("bought").getValue(Boolean.class);
 
                                                     //check if the gift is bought
@@ -191,12 +198,34 @@ public class MainActivity extends AppCompatActivity
 
                                                         //if bought, add the price to the total price of bought gifts
                                                         mBoughtCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+                                                        mBoughtItems += 1;
 
                                                     }
 
                                                     //set the price to display in the textview
                                                     mGeneralTotalCostTv.setText("$" + mBoughtCost +"/$" + mTotalCost);
 
+                                                    //set the text to display the number of bought items
+                                                    mGeneralBoughtTv.setText(mBoughtItems + "/" + mTotalItems + " gifts bought");
+
+                                                    //calculate the progress of bought items
+                                                    double progress = calculateProgress(mBoughtItems, mTotalItems);
+
+                                                    if (progress == 0){
+
+                                                        mBuyingProcess.setProgress((int) progress);
+                                                        mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_background));
+
+                                                    } else if (progress > 99){
+
+                                                        mBuyingProcess.setProgress((int) progress);
+                                                        mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal));
+
+                                                    } else {
+                                                        mBuyingProcess.setProgress((int) progress);
+                                                        mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal_red));
+
+                                                    }
 
                                                     Log.e("Retrieved String", dataSnapshot.child("giftPrice").getValue(Double.class).toString());
 
@@ -254,43 +283,6 @@ public class MainActivity extends AppCompatActivity
                             //display the bar at the bottom that shows total price and progress
                             mItemsCoutnLayout.setVisibility(View.VISIBLE);
 
-                            int boughtItems = 0;
-
-                            int totalItems = (int) dataSnapshot.getChildrenCount();
-
-                            //loop to increment the number of bought items
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                Person person = snapshot.getValue(Person.class);
-
-
-                                if (person.isBought()){
-
-                                    boughtItems += 1;
-
-                                }
-                            }
-
-                            //set the text to display the number of bought items
-                            mGeneralBoughtTv.setText(boughtItems + "/" + totalItems + " gifts bought");
-
-                            //calculate the progress of bought items
-                            double progress = calculateProgress(boughtItems, totalItems);
-
-                            if (progress == 0){
-
-                                mBuyingProcess.setBackground(getResources().getDrawable(R.drawable.custom_progress_background));
-
-                            } else if (progress > 90){
-
-                                mBuyingProcess.setProgress((int) progress);
-                                mBuyingProcess.setBackgroundResource(0);
-                                mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal));
-
-                            } else {
-                                mBuyingProcess.setProgress((int) progress);
-                                mBuyingProcess.setBackgroundResource(0);
-                            }
-
                         }
 
                     }
@@ -337,22 +329,59 @@ public class MainActivity extends AppCompatActivity
         //adapter for the recyclerview
         FirebaseRecyclerAdapter<Person, PeopleViewHolder> adapter = new FirebaseRecyclerAdapter<Person, PeopleViewHolder>(options) {
             @Override
-            protected void onBindViewHolder(@NonNull PeopleViewHolder holder, final int position, @NonNull final Person model) {
+            protected void onBindViewHolder(@NonNull final PeopleViewHolder holder, final int position, @NonNull final Person model) {
 
                 //set the data to display
                 holder.mNameTv.setText(model.getPersonName());
                 holder.mInitialTv.setText(String.valueOf(model.getPersonName().charAt(0)));
+                holder.mExpiryTv.setText("Deadline: " + model.getDeadline());
 
 
-                if (model.isBought()){
+                FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                        .child(getRef(position).getKey()).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    holder.mGiftIv.setImageResource(R.drawable.gift);
+                        if (dataSnapshot.hasChildren()){
 
-                } else {
+                            int mBoughtItems = 0, mTotalItems;
 
-                    holder.mGiftIv.setImageResource(R.drawable.gift_grey);
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()){
 
-                }
+
+                                mTotalItems = (int) dataSnapshot.getChildrenCount();
+
+                                if (snapshot.child("bought").getValue(Boolean.class) == true){
+
+                                    mBoughtItems = mBoughtItems + 1;
+
+                                }
+
+                                if (mBoughtItems == mTotalItems ){
+
+                                    holder.mGiftIv.setImageResource(R.drawable.gift);
+
+
+                                } else if (mBoughtItems < mTotalItems){
+
+                                    holder.mGiftIv.setImageResource(R.drawable.gift_grey);
+
+                                }
+
+                            }
+
+                        }
+
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
 
                 //click listener to open the list of gifts associated with the person
                 holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -678,7 +707,7 @@ public class MainActivity extends AppCompatActivity
     private class PeopleViewHolder extends RecyclerView.ViewHolder{
 
         private View mView;
-        private TextView mNameTv, mInitialTv;
+        private TextView mNameTv, mInitialTv, mExpiryTv;
         private ImageView mGiftIv;
 
         public PeopleViewHolder(View itemView) {
@@ -688,6 +717,7 @@ public class MainActivity extends AppCompatActivity
             mNameTv = itemView.findViewById(R.id.tv_person_name);
             mGiftIv = itemView.findViewById(R.id.iv_gift_icon);
             mInitialTv = itemView.findViewById(R.id.tv_name_initial);
+            mExpiryTv = itemView.findViewById(R.id.tv_expiry);
 
         }
     }

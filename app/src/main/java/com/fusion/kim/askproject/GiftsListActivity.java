@@ -88,7 +88,7 @@ public class GiftsListActivity extends AppCompatActivity {
                 if (!dataSnapshot.hasChildren()){
 
                     //if there are no gifts, display a message saying so and hide the bar at the
-                    //botto, shoing total cost and buying progress bar
+                    //bottom, showing total cost and buying progress bar
                     mNoGiftsTv.setVisibility(View.VISIBLE);
                     mTotalGiftsCountLayout.setVisibility(View.INVISIBLE);
 
@@ -130,17 +130,18 @@ public class GiftsListActivity extends AppCompatActivity {
 
                     if (progress == 0){
 
-                        mGiftsProgress.setBackground(getResources().getDrawable(R.drawable.custom_progress_background));
+                        mGiftsProgress.setProgress((int) progress);
+                        mGiftsProgress.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_background));
 
-                    } else if (progress > 90){
+                    } else if (progress > 99){
 
                         mGiftsProgress.setProgress((int) progress);
-                        mGiftsProgress.setBackgroundResource(0);
                         mGiftsProgress.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal));
 
                     } else {
                         mGiftsProgress.setProgress((int) progress);
-                        mGiftsProgress.setBackgroundResource(0);
+                        mGiftsProgress.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal_red));
+
                     }
 
                 }
@@ -158,6 +159,14 @@ public class GiftsListActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        //populate the gifts list
+        populateGiftsList();
+
+    }
+
+    //method to load data from firebase and populate the gifts list
+    private void populateGiftsList(){
 
         //set up the query to request data from the firebase reference specified
         Query query = mGiftListRef.limitToLast(50);
@@ -355,4 +364,11 @@ public class GiftsListActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        populateGiftsList();
+
+    }
 }

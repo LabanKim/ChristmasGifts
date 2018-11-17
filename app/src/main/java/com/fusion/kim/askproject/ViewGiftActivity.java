@@ -63,12 +63,11 @@ public class ViewGiftActivity extends AppCompatActivity {
 
         //get data sent from the previous activity
         Bundle data = getIntent().getExtras();
-        String giftName = data.getString("giftName");
-        String description = data.getString("description");
-        double giftPrice = data.getDouble("giftPrice");
-        boolean bought = data.getBoolean("bought");
+        final String giftName = data.getString("giftName");
+        final String description = data.getString("description");
+        final double giftPrice = data.getDouble("giftPrice");
+        final boolean bought = data.getBoolean("bought");
         final String giftKey = data.getString("giftKey");
-        String personID = data.getString("personID");
 
         //set the title of the actionbar as the gift name
         getSupportActionBar().setTitle(giftName);
@@ -98,76 +97,8 @@ public class ViewGiftActivity extends AppCompatActivity {
         mPriceInput.setText(String.valueOf(giftPrice));
         mDescInput.setText(description);
 
-        //retrieve and download images from firebase
-        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child(personID).child(giftKey).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                //retrieve and set the first image to the imageview
-                Picasso.get().load(getIntent().getStringExtra("imageOne"))
-                    .into(mImageOneIv, new Callback() {
-                        @Override
-                        public void onSuccess() {
-
-                            //retrieve and set the second image to the imageview
-                            Picasso.get().load(getIntent().getStringExtra("imageTwo"))
-                                    .into(mImageTwoIv, new Callback() {
-                                        @Override
-                                        public void onSuccess() {
-
-                                            //retrieve and set the third image to the imageview
-                                            Picasso.get().load(getIntent().getStringExtra("imageThree"))
-                                                    .into(mImageThreeIv, new Callback() {
-                                                        @Override
-                                                        public void onSuccess() {
-
-                                                            mProgress.dismiss();
-
-                                                        }
-
-                                                        @Override
-                                                        public void onError(Exception e) {
-
-                                                            mProgress.dismiss();
-
-                                                            Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
-
-                                                        }
-                                                    });
-
-                                        }
-
-                                        @Override
-                                        public void onError(Exception e) {
-
-                                            mProgress.dismiss();
-
-                                            Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
-
-                                        }
-                                    });
-
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-
-                            mProgress.dismiss();
-
-                            Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
-
-                        }
-                    });
-
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+        //load images
+        loadImages();
 
         //add click listener to the first image
         mImageOneIv.setOnClickListener(new View.OnClickListener() {
@@ -178,8 +109,14 @@ public class ViewGiftActivity extends AppCompatActivity {
                     //send the user to view the image
                     Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
                     viewIntent.putExtra("image", getIntent().getStringExtra("imageOne"));
+                    viewIntent.putExtra("imageTwo", getIntent().getStringExtra("imageTwo"));
+                    viewIntent.putExtra("imageThree", getIntent().getStringExtra("imageThree"));
                     viewIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                     viewIntent.putExtra("giftKey", giftKey);
+                    viewIntent.putExtra("giftName", giftName);
+                    viewIntent.putExtra("description", description);
+                    viewIntent.putExtra("giftPrice", giftPrice);
+                    viewIntent.putExtra("bought", bought);
                     viewIntent.putExtra("imageName", "image1");
                     startActivity(viewIntent);
 
@@ -197,8 +134,14 @@ public class ViewGiftActivity extends AppCompatActivity {
                 try {
                     Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
                     viewIntent.putExtra("image", getIntent().getStringExtra("imageTwo"));
+                    viewIntent.putExtra("imageOne", getIntent().getStringExtra("imageOne"));
+                    viewIntent.putExtra("imageThree", getIntent().getStringExtra("imageThree"));
                     viewIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                     viewIntent.putExtra("giftKey", giftKey);
+                    viewIntent.putExtra("giftName", giftName);
+                    viewIntent.putExtra("description", description);
+                    viewIntent.putExtra("giftPrice", giftPrice);
+                    viewIntent.putExtra("bought", bought);
                     viewIntent.putExtra("imageName", "image2");
                     startActivity(viewIntent);
                 } catch (Exception e){
@@ -217,8 +160,14 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                     Intent viewIntent = new Intent(ViewGiftActivity.this, ViewImageActivity.class);
                     viewIntent.putExtra("image", getIntent().getStringExtra("imageThree"));
+                    viewIntent.putExtra("imageOne", getIntent().getStringExtra("imageOne"));
+                    viewIntent.putExtra("imageTwo", getIntent().getStringExtra("imageTwo"));
                     viewIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                     viewIntent.putExtra("giftKey", giftKey);
+                    viewIntent.putExtra("giftName", giftName);
+                    viewIntent.putExtra("description", description);
+                    viewIntent.putExtra("giftPrice", giftPrice);
+                    viewIntent.putExtra("bought", bought);
                     viewIntent.putExtra("imageName", "image3");
                     startActivity(viewIntent);
 
@@ -244,6 +193,82 @@ public class ViewGiftActivity extends AppCompatActivity {
         mUpdatingPD.setTitle("Updating Gift");
         mUpdatingPD.setMessage("Processing...");
         mUpdatingPD.setCancelable(false);
+
+    }
+
+    //method to query firebase storage and load images into the image views
+    private void loadImages() {
+
+        //retrieve and download images from firebase
+        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(getIntent().getStringExtra("personID")).child(getIntent().getStringExtra("giftKey")).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                //retrieve and set the first image to the imageview
+                Picasso.get().load(getIntent().getStringExtra("imageOne"))
+                        .into(mImageOneIv, new Callback() {
+                            @Override
+                            public void onSuccess() {
+
+                                //retrieve and set the second image to the imageview
+                                Picasso.get().load(getIntent().getStringExtra("imageTwo"))
+                                        .into(mImageTwoIv, new Callback() {
+                                            @Override
+                                            public void onSuccess() {
+
+                                                //retrieve and set the third image to the imageview
+                                                Picasso.get().load(getIntent().getStringExtra("imageThree"))
+                                                        .into(mImageThreeIv, new Callback() {
+                                                            @Override
+                                                            public void onSuccess() {
+
+                                                                mProgress.dismiss();
+
+                                                            }
+
+                                                            @Override
+                                                            public void onError(Exception e) {
+
+                                                                mProgress.dismiss();
+
+                                                                Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
+
+                                                            }
+                                                        });
+
+                                            }
+
+                                            @Override
+                                            public void onError(Exception e) {
+
+                                                mProgress.dismiss();
+
+                                                Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
+
+                                            }
+                                        });
+
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+
+                                mProgress.dismiss();
+
+                                Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
+
+                            }
+                        });
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
     }
 
@@ -410,6 +435,11 @@ public class ViewGiftActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
 
+        loadImages();
 
+    }
 }
