@@ -67,6 +67,9 @@
             android:layout_toRightOf="@+id/iv_santa"
             android:text="Christmas Gift List"
             android:textStyle="bold"
+            android:layout_toLeftOf="@id/tv_total_spent"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:layout_alignParentTop="true" />
 
         <TextView

@@ -41,12 +41,15 @@ public class ViewGiftActivity extends AppCompatActivity {
     private Switch mBoughtSwitch;
 
     private ProgressDialog mUpdatingPD;
-    private ProgressBar mLoadingDetailsPB;
+    private ProgressBar mLoadingDetailsPB, mLoadImageOnePb, mLoadImageTwoPb, mLoadImageThreePb;
 
-    private ImageView mImageOneIv, mImageTwoIv, mImageThreeIv;
+    private ImageView mImageOneIv, mImageTwoIv, mImageThreeIv, mReloadOne, mReloadTwo, mReloadThree;
     private ProgressDialog mProgress;
 
     private String imageOne = null, imageTwo = null, imageThree = null;
+
+    //if images are loaded successfully
+    private boolean mOneLoaded = false, mTwoLoaded = false, mThreeLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,12 +85,18 @@ public class ViewGiftActivity extends AppCompatActivity {
         mDescInput = findViewById(R.id.input_view_gift_desc);
         mBoughtSwitch = findViewById(R.id.switch_view_bought);
         mLoadingDetailsPB = findViewById(R.id.pb_loading_details);
+        mReloadOne = findViewById(R.id.iv_refresh_one);
+        mReloadTwo = findViewById(R.id.iv_refresh_two);
+        mReloadThree = findViewById(R.id.iv_refresh_three);
 
         imageOne = getIntent().getStringExtra("imageOne");
         imageTwo = getIntent().getStringExtra("imageTwo");
         imageThree = getIntent().getStringExtra("imageThree");
 
         mLoadingDetailsPB.setVisibility(View.GONE);
+        mLoadImageOnePb = findViewById(R.id.pb_load_one);
+        mLoadImageTwoPb = findViewById(R.id.pb_load_two);
+        mLoadImageThreePb = findViewById(R.id.pb_load_three);
 
         mImageOneIv = findViewById(R.id.image_one_gift);
         mImageTwoIv = findViewById(R.id.image_two_gift);
@@ -99,6 +108,28 @@ public class ViewGiftActivity extends AppCompatActivity {
 
         //load images
         loadImages();
+
+        //reload images if the fail to load
+        mReloadOne.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reloadImageOne();
+            }
+        });
+
+        mReloadTwo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reloadImageTwo();
+            }
+        });
+
+        mReloadThree.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reloadImageThree();
+            }
+        });
 
         //add click listener to the first image
         mImageOneIv.setOnClickListener(new View.OnClickListener() {
@@ -211,17 +242,25 @@ public class ViewGiftActivity extends AppCompatActivity {
                             @Override
                             public void onSuccess() {
 
+                                mOneLoaded = true;
+                                mReloadOne.setVisibility(View.GONE);
+
                                 //retrieve and set the second image to the imageview
                                 Picasso.get().load(getIntent().getStringExtra("imageTwo"))
                                         .into(mImageTwoIv, new Callback() {
                                             @Override
                                             public void onSuccess() {
+                                                mTwoLoaded = true;
+                                                mReloadOne.setVisibility(View.GONE);
 
                                                 //retrieve and set the third image to the imageview
                                                 Picasso.get().load(getIntent().getStringExtra("imageThree"))
                                                         .into(mImageThreeIv, new Callback() {
                                                             @Override
                                                             public void onSuccess() {
+
+                                                                mThreeLoaded = true;
+                                                                mReloadThree.setVisibility(View.GONE);
 
                                                                 mProgress.dismiss();
 
@@ -232,8 +271,8 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                                                                 mProgress.dismiss();
 
-                                                                Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
-
+                                                                mThreeLoaded = false;
+                                                                mReloadThree.setVisibility(View.VISIBLE);
                                                             }
                                                         });
 
@@ -244,8 +283,8 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                                                 mProgress.dismiss();
 
-                                                Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
-
+                                                mTwoLoaded = false;
+                                                mReloadTwo.setVisibility(View.VISIBLE);
                                             }
                                         });
 
@@ -256,8 +295,8 @@ public class ViewGiftActivity extends AppCompatActivity {
 
                                 mProgress.dismiss();
 
-                                Toast.makeText(ViewGiftActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
-
+                                mOneLoaded = false;
+                                mReloadOne.setVisibility(View.VISIBLE);
                             }
                         });
 
@@ -295,6 +334,99 @@ public class ViewGiftActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void reloadImageOne(){
+
+        mLoadImageOnePb.setVisibility(View.VISIBLE);
+
+        //retrieve and set the image to the imageview
+        Picasso.get().load(getIntent().getStringExtra("imageOne"))
+                .into(mImageOneIv, new Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                        mOneLoaded = true;
+                        mReloadOne.setVisibility(View.GONE);
+
+                        mLoadImageOnePb.setVisibility(View.GONE);
+
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+
+                        mLoadImageOnePb.setVisibility(View.GONE);
+
+                        mImageOneIv.setEnabled(false);
+
+                        mOneLoaded = false;
+                        mReloadOne.setVisibility(View.VISIBLE);
+                    }
+                });
+
+    }
+
+    private void reloadImageTwo(){
+
+        mLoadImageTwoPb.setVisibility(View.VISIBLE);
+
+        //retrieve and set the image to the imageview
+        Picasso.get().load(getIntent().getStringExtra("imageTwo"))
+                .into(mImageTwoIv, new Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                        mTwoLoaded = true;
+                        mReloadTwo.setVisibility(View.GONE);
+
+                        mLoadImageTwoPb.setVisibility(View.GONE);
+
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+
+                        mLoadImageTwoPb.setVisibility(View.GONE);
+
+                        mImageTwoIv.setEnabled(false);
+
+                        mTwoLoaded = false;
+                        mReloadTwo.setVisibility(View.VISIBLE);
+                    }
+                });
+
+    }
+
+    private void reloadImageThree(){
+
+        mLoadImageThreePb.setVisibility(View.VISIBLE);
+
+        //retrieve and set the image to the imageview
+        Picasso.get().load(getIntent().getStringExtra("imageThree"))
+                .into(mImageThreeIv, new Callback() {
+                    @Override
+                    public void onSuccess() {
+
+                        mThreeLoaded = true;
+                        mReloadThree.setVisibility(View.GONE);
+
+                        mLoadImageThreePb.setVisibility(View.GONE);
+
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+
+                        mLoadImageThreePb.setVisibility(View.GONE);
+
+                        mImageThreeIv.setEnabled(false);
+
+                        mThreeLoaded = false;
+                        mReloadThree.setVisibility(View.VISIBLE);
+                    }
+                });
+
     }
 
     //method to update data about the gift

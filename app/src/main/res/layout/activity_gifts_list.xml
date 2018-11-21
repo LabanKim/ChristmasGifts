@@ -39,7 +39,7 @@
         android:paddingVertical="10dp"
         android:layout_alignParentBottom="true"
         android:background="@android:color/white"
-        android:visibility="visible">
+        android:visibility="invisible">
 
         <ImageView
             android:id="@+id/iv_santa"
@@ -57,7 +57,10 @@
             android:textColor="@android:color/holo_red_dark"
             android:layout_toRightOf="@+id/iv_santa"
             tools:text="Andy"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:textStyle="bold"
+            android:layout_toLeftOf="@+id/tv_total_gifts_spent"
             android:layout_alignParentTop="true" />
 
         <TextView

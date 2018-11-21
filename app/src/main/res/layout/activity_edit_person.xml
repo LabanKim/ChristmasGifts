@@ -30,7 +30,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
-            android:textColorHint="@android:color/white"/>
+            android:textColorHint="@android:color/white"
+            android:maxLength="30"/>
 
         <TextView
             android:layout_width="match_parent"

@@ -31,7 +31,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
-            android:textColorHint="@android:color/white"/>
+            android:textColorHint="@android:color/white"
+            android:maxLength="30"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -46,7 +47,8 @@
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
             android:textColorHint="@android:color/white"
-            android:inputType="numberDecimal"/>
+            android:inputType="numberDecimal"
+            android:maxLength="6"/>
 
 
         <RelativeLayout
@@ -90,25 +92,90 @@
             android:paddingVertical="18dp"
             android:gravity="center">
 
-            <ImageView
-                android:id="@+id/image_one_gift"
+            <RelativeLayout
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@drawable/placeholder_image_logo"
-                android:layout_marginRight="8dp"/>
+                android:background="#9af7f7f7"
+                android:layout_marginRight="8dp">
 
-            <ImageView
-                android:id="@+id/image_two_gift"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/placeholder_image_logo"
-                android:layout_marginRight="8dp"/>
+                <ImageView
+                    android:id="@+id/image_one_gift"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/placeholder_image_logo" />
+                <ImageView
+                    android:id="@+id/iv_refresh_one"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/baseline_refresh_black_24dp"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone"/>
 
-            <ImageView
-                android:id="@+id/image_three_gift"
+                <ProgressBar
+                    android:id="@+id/pb_load_one"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="invisible"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@drawable/placeholder_image_logo"/>
+                android:background="#9af7f7f7"
+                android:layout_marginRight="8dp">
+
+                <ImageView
+                    android:id="@+id/image_two_gift"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/placeholder_image_logo"/>
+                <ImageView
+                    android:id="@+id/iv_refresh_two"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/baseline_refresh_black_24dp"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone"/>
+
+                <ProgressBar
+                    android:id="@+id/pb_load_two"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="invisible"/>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:background="#9af7f7f7"
+                android:layout_marginRight="8dp">
+
+                <ImageView
+                    android:id="@+id/image_three_gift"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/placeholder_image_logo" />
+                <ImageView
+                    android:id="@+id/iv_refresh_three"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/baseline_refresh_black_24dp"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone"/>
+
+                <ProgressBar
+                    android:id="@+id/pb_load_three"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:visibility="invisible"/>
+
+            </RelativeLayout>
+
 
         </LinearLayout>
 
