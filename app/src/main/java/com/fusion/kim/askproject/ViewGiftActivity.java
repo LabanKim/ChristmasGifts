@@ -2,7 +2,9 @@ package com.fusion.kim.askproject;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,6 +17,13 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -62,8 +71,6 @@ public class ViewGiftActivity extends AppCompatActivity {
         mProgress.setMessage("Loading...");
         mProgress.setCancelable(false);
 
-        mProgress.show();
-
         //get data sent from the previous activity
         Bundle data = getIntent().getExtras();
         final String giftName = data.getString("giftName");
@@ -107,7 +114,75 @@ public class ViewGiftActivity extends AppCompatActivity {
         mDescInput.setText(description);
 
         //load images
-        loadImages();
+        //loadImages();
+
+        mLoadImageOnePb.setVisibility(View.VISIBLE);
+
+        RequestOptions requestOption = new RequestOptions()
+                .placeholder(R.drawable.placeholder_image_logo).centerCrop();
+        Glide.with(this).load(getIntent().getStringExtra("imageOne"))
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .apply(requestOption)
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        mLoadImageOnePb.setVisibility(View.GONE);
+                        mImageOneIv.setImageDrawable(getResources().getDrawable(R.drawable.placeholder_image_logo));
+                        mReloadOne.setVisibility(View.VISIBLE);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        mLoadImageOnePb.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(mImageOneIv);
+
+        mLoadImageTwoPb.setVisibility(View.VISIBLE);
+
+        Glide.with(this).load(getIntent().getStringExtra("imageTwo"))
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .apply(requestOption)
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        mLoadImageTwoPb.setVisibility(View.GONE);
+                        mImageTwoIv.setImageDrawable(getResources().getDrawable(R.drawable.placeholder_image_logo));
+                        mReloadTwo.setVisibility(View.VISIBLE);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        mLoadImageTwoPb.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(mImageTwoIv);
+
+        mLoadImageThreePb.setVisibility(View.VISIBLE);
+
+        Glide.with(this).load(getIntent().getStringExtra("imageThree"))
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .apply(requestOption)
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        mLoadImageThreePb.setVisibility(View.GONE);
+                        mImageThreeIv.setImageDrawable(getResources().getDrawable(R.drawable.placeholder_image_logo));
+                        mReloadThree.setVisibility(View.VISIBLE);
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        mLoadImageThreePb.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(mImageThreeIv);
 
         //reload images if the fail to load
         mReloadOne.setOnClickListener(new View.OnClickListener() {
@@ -227,90 +302,6 @@ public class ViewGiftActivity extends AppCompatActivity {
 
     }
 
-    //method to query firebase storage and load images into the image views
-    private void loadImages() {
-
-        //retrieve and download images from firebase
-        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .child(getIntent().getStringExtra("personID")).child(getIntent().getStringExtra("giftKey")).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                //retrieve and set the first image to the imageview
-                Picasso.get().load(getIntent().getStringExtra("imageOne"))
-                        .into(mImageOneIv, new Callback() {
-                            @Override
-                            public void onSuccess() {
-
-                                mOneLoaded = true;
-                                mReloadOne.setVisibility(View.GONE);
-
-                                //retrieve and set the second image to the imageview
-                                Picasso.get().load(getIntent().getStringExtra("imageTwo"))
-                                        .into(mImageTwoIv, new Callback() {
-                                            @Override
-                                            public void onSuccess() {
-                                                mTwoLoaded = true;
-                                                mReloadOne.setVisibility(View.GONE);
-
-                                                //retrieve and set the third image to the imageview
-                                                Picasso.get().load(getIntent().getStringExtra("imageThree"))
-                                                        .into(mImageThreeIv, new Callback() {
-                                                            @Override
-                                                            public void onSuccess() {
-
-                                                                mThreeLoaded = true;
-                                                                mReloadThree.setVisibility(View.GONE);
-
-                                                                mProgress.dismiss();
-
-                                                            }
-
-                                                            @Override
-                                                            public void onError(Exception e) {
-
-                                                                mProgress.dismiss();
-
-                                                                mThreeLoaded = false;
-                                                                mReloadThree.setVisibility(View.VISIBLE);
-                                                            }
-                                                        });
-
-                                            }
-
-                                            @Override
-                                            public void onError(Exception e) {
-
-                                                mProgress.dismiss();
-
-                                                mTwoLoaded = false;
-                                                mReloadTwo.setVisibility(View.VISIBLE);
-                                            }
-                                        });
-
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-
-                                mProgress.dismiss();
-
-                                mOneLoaded = false;
-                                mReloadOne.setVisibility(View.VISIBLE);
-                            }
-                        });
-
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -339,93 +330,92 @@ public class ViewGiftActivity extends AppCompatActivity {
     private void reloadImageOne(){
 
         mLoadImageOnePb.setVisibility(View.VISIBLE);
+        mReloadOne.setVisibility(View.GONE);
 
-        //retrieve and set the image to the imageview
-        Picasso.get().load(getIntent().getStringExtra("imageOne"))
-                .into(mImageOneIv, new Callback() {
+        RequestOptions requestOption = new RequestOptions()
+                .placeholder(R.drawable.placeholder_image_logo).centerCrop();
+        Glide.with(this).load(getIntent().getStringExtra("imageOne"))
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .apply(requestOption)
+                .listener(new RequestListener<Drawable>() {
                     @Override
-                    public void onSuccess() {
-
-                        mOneLoaded = true;
-                        mReloadOne.setVisibility(View.GONE);
-
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                         mLoadImageOnePb.setVisibility(View.GONE);
-
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-
-                        mLoadImageOnePb.setVisibility(View.GONE);
-
-                        mImageOneIv.setEnabled(false);
-
-                        mOneLoaded = false;
+                        mImageOneIv.setImageDrawable(getResources().getDrawable(R.drawable.placeholder_image_logo));
                         mReloadOne.setVisibility(View.VISIBLE);
+                        return false;
                     }
-                });
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        mLoadImageOnePb.setVisibility(View.GONE);
+                        mReloadOne.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(mImageOneIv);
 
     }
 
     private void reloadImageTwo(){
 
         mLoadImageTwoPb.setVisibility(View.VISIBLE);
+        mReloadTwo.setVisibility(View.GONE);
 
-        //retrieve and set the image to the imageview
-        Picasso.get().load(getIntent().getStringExtra("imageTwo"))
-                .into(mImageTwoIv, new Callback() {
+        RequestOptions requestOption = new RequestOptions()
+                .placeholder(R.drawable.placeholder_image_logo).centerCrop();
+
+        Glide.with(this).load(getIntent().getStringExtra("imageTwo"))
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .apply(requestOption)
+                .listener(new RequestListener<Drawable>() {
                     @Override
-                    public void onSuccess() {
-
-                        mTwoLoaded = true;
-                        mReloadTwo.setVisibility(View.GONE);
-
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                         mLoadImageTwoPb.setVisibility(View.GONE);
-
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-
-                        mLoadImageTwoPb.setVisibility(View.GONE);
-
-                        mImageTwoIv.setEnabled(false);
-
-                        mTwoLoaded = false;
+                        mImageTwoIv.setImageDrawable(getResources().getDrawable(R.drawable.placeholder_image_logo));
                         mReloadTwo.setVisibility(View.VISIBLE);
+                        return false;
                     }
-                });
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        mLoadImageTwoPb.setVisibility(View.GONE);
+                        mReloadTwo.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(mImageTwoIv);
 
     }
 
     private void reloadImageThree(){
 
         mLoadImageThreePb.setVisibility(View.VISIBLE);
+        mReloadThree.setVisibility(View.GONE);
 
-        //retrieve and set the image to the imageview
-        Picasso.get().load(getIntent().getStringExtra("imageThree"))
-                .into(mImageThreeIv, new Callback() {
+        RequestOptions requestOption = new RequestOptions()
+                .placeholder(R.drawable.placeholder_image_logo).centerCrop();
+
+        Glide.with(this).load(getIntent().getStringExtra("imageThree"))
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .apply(requestOption)
+                .listener(new RequestListener<Drawable>() {
                     @Override
-                    public void onSuccess() {
-
-                        mThreeLoaded = true;
-                        mReloadThree.setVisibility(View.GONE);
-
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                         mLoadImageThreePb.setVisibility(View.GONE);
-
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-
-                        mLoadImageThreePb.setVisibility(View.GONE);
-
-                        mImageThreeIv.setEnabled(false);
-
-                        mThreeLoaded = false;
+                        mImageThreeIv.setImageDrawable(getResources().getDrawable(R.drawable.placeholder_image_logo));
                         mReloadThree.setVisibility(View.VISIBLE);
+                        return false;
                     }
-                });
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        mLoadImageThreePb.setVisibility(View.GONE);
+                        mReloadThree.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(mImageThreeIv);
 
     }
 
@@ -562,16 +552,9 @@ public class ViewGiftActivity extends AppCompatActivity {
         Intent backIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
         backIntent.putExtra("personID", getIntent().getStringExtra("personID"));
         backIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+        backIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(backIntent);
         finish();
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        loadImages();
 
     }
 }

@@ -99,7 +99,7 @@ public class GiftsListActivity extends AppCompatActivity {
 
                     int boughtItems = 0;
 
-                    //for eaxh gift, retrieve it's price
+                    //for each gift, retrieve it's price
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Gift gift = snapshot.getValue(Gift.class);
 
@@ -354,21 +354,4 @@ public class GiftsListActivity extends AppCompatActivity {
         }
     }
 
-    //Override back method to make sure that the user goes back to the main activity and not exit the app
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-
-        startActivity(new Intent(GiftsListActivity.this, MainActivity.class));
-        finish();
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        populateGiftsList();
-
-    }
 }
