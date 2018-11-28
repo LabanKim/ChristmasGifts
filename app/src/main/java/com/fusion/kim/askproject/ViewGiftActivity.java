@@ -484,6 +484,7 @@ public class ViewGiftActivity extends AppCompatActivity {
                                         Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
                                         mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                                         mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                                        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                         startActivity(mainIntent);
                                         finish();
 
@@ -523,6 +524,7 @@ public class ViewGiftActivity extends AppCompatActivity {
                             Intent mainIntent = new Intent(ViewGiftActivity.this, GiftsListActivity.class);
                             mainIntent.putExtra("personID", getIntent().getStringExtra("personID"));
                             mainIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                            mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(mainIntent);
                             finish();
 
