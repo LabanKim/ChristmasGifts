@@ -81,6 +81,12 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mTotalCost = 0;
+        mBoughtCost = 0;
+
+        mTotalItems = 0;
+        mBoughtItems = 0;
+
         //initialize the shared preference which will store how the user prefers to sort the list of people
         mQuerySp = getSharedPreferences("queryPreference",MODE_PRIVATE);
 
@@ -142,24 +148,18 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        //Set all counts to zero at first
-        mTotalCost = 0;
-        mBoughtCost = 0;
-
-        mTotalItems = 0;
-        mBoughtItems = 0;
-
         //retrieve the total price of all the gifts of all the users
         FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        mTotalItems = 0;
+                        mTotalCost = 0;
+                        mBoughtCost = 0;
+                        mBoughtItems = 0;
+
+
 
                         //loop through the datasnapshot to get deeper into the firebase root till you
                         //reach the desired node and retrieve the gift price
@@ -182,7 +182,6 @@ public class MainActivity extends AppCompatActivity
                                                 .child(key).child(key2).addValueEventListener(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
-
 
                                                 //check if this node has children, if yes proceed to retrieve the prices
                                                 if (dataSnapshot.hasChildren()){
@@ -260,6 +259,14 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
 
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //Set all counts to zero at first
 
         //check if there any people
         mPeopleListRef.child("PeopleList")
@@ -435,6 +442,10 @@ public class MainActivity extends AppCompatActivity
                                                         if (task.isSuccessful()){
 
                                                             //if removal was successful then remove the person
+                                                            mTotalItems = 0;
+                                                            mTotalCost = 0;
+                                                            mBoughtCost = 0;
+                                                            mBoughtItems = 0;
 
                                                             mPeopleListRef.child("PeopleList").child(mAuth.getCurrentUser().getUid())
                                                                     .child(getRef(position).getKey())
@@ -447,12 +458,24 @@ public class MainActivity extends AppCompatActivity
                                                                         //removal was a success
                                                                         progress.dismiss();
 
+                                                                        mTotalItems = 0;
+                                                                        mTotalCost = 0;
+                                                                        mBoughtCost = 0;
+                                                                        mBoughtItems = 0;
+
+
                                                                         Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
 
                                                                     } else {
 
                                                                         //removal failed
                                                                         progress.dismiss();
+
+                                                                        mTotalItems = 0;
+                                                                        mTotalCost = 0;
+                                                                        mBoughtCost = 0;
+                                                                        mBoughtItems = 0;
+
 
                                                                         Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
 
@@ -462,6 +485,7 @@ public class MainActivity extends AppCompatActivity
                                                             });
 
                                                         } else {
+                                                            progress.dismiss();
 
                                                             Toast.makeText(MainActivity.this, "Failed to remove person's gifts", Toast.LENGTH_LONG).show();
 
@@ -471,6 +495,7 @@ public class MainActivity extends AppCompatActivity
                                                 });
 
                                             } catch (Exception e){
+                                                progress.dismiss();
                                                 Toast.makeText(MainActivity.this, "Failed to delete person. Try again.", Toast.LENGTH_LONG).show();
                                             }
 
