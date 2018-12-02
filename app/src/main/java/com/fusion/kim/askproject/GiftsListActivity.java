@@ -46,6 +46,7 @@ public class GiftsListActivity extends AppCompatActivity {
     private ProgressBar mGiftsProgress;
 
     private double mTotalCostBought = 0, mTotalPrice = 0;
+    private int mBoughtItems = 0, mTotalCount = 0;
 
 
     @Override
@@ -58,6 +59,10 @@ public class GiftsListActivity extends AppCompatActivity {
         //set the title of the action bar to be the name of the person
         getSupportActionBar().setTitle(getIntent().getStringExtra("personName"));
 
+        mTotalCostBought = 0;
+        mTotalPrice = 0;
+        mBoughtItems = 0;
+        mTotalCount = 0;
 
         //initialize the member variables
         mGiftListRv = findViewById(R.id.rv_gifts_list);
@@ -95,9 +100,12 @@ public class GiftsListActivity extends AppCompatActivity {
                 } else {
 
                     //if there are gifts, count the total gifts
-                    int totalCount = (int) dataSnapshot.getChildrenCount();
+                    mTotalPrice = 0;
+                    mTotalCostBought = 0;
 
-                    int boughtItems = 0;
+                    mTotalCount = (int) dataSnapshot.getChildrenCount();
+
+                    mBoughtItems = 0;
 
                     //for each gift, retrieve it's price
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -111,7 +119,7 @@ public class GiftsListActivity extends AppCompatActivity {
                             //add the gift'd price to the bought gifts total cost
                             mTotalCostBought += gift.getGiftPrice();
                             //increment the number of bought gifts
-                            boughtItems += 1;
+                            mBoughtItems += 1;
 
                         }
                     }
@@ -120,13 +128,13 @@ public class GiftsListActivity extends AppCompatActivity {
                     mNoGiftsTv.setVisibility(View.GONE);
                     //show the bar at the bottom showing the buying progress and total cost
                     mTotalGiftsCountLayout.setVisibility(View.VISIBLE);
-                    mTotalBoughtTv.setText("Bought: " + boughtItems + "/" + totalCount);
+                    mTotalBoughtTv.setText("Bought: " + mBoughtItems + "/" + mTotalCount);
 
                     mTotalCostTv.setText("$" + mTotalCostBought + "/$" + mTotalPrice );
-                    mTotalBoughtTv.setText(boughtItems + "/" + totalCount + " gifts bought");
+                    mTotalBoughtTv.setText(mBoughtItems + "/" + mTotalCount + " gifts bought");
 
                     //calculate the buying progress
-                    double progress = ((double) boughtItems / (double) (int) dataSnapshot.getChildrenCount()) * 100;
+                    double progress = ((double) mBoughtItems / (double) (int) dataSnapshot.getChildrenCount()) * 100;
 
                     if (progress == 0){
 
@@ -201,21 +209,29 @@ public class GiftsListActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
 
-                        Intent giftsIntent = new Intent(GiftsListActivity.this, ViewGiftActivity.class);
-                        //add data to send to the next activity
+                        try{
 
-                        giftsIntent.putExtra("personID", getIntent().getStringExtra("personID"));
-                        giftsIntent.putExtra("personName", getIntent().getStringExtra("personName"));
-                        giftsIntent.putExtra("uniqueID", "giftItem");
-                        giftsIntent.putExtra("giftName", model.getGiftName());
-                        giftsIntent.putExtra("giftPrice", model.getGiftPrice());
-                        giftsIntent.putExtra("description", model.getDescription());
-                        giftsIntent.putExtra("bought", model.isBought());
-                        giftsIntent.putExtra("giftKey", getRef(position).getKey());
-                        giftsIntent.putExtra("imageOne", model.getImageOne());
-                        giftsIntent.putExtra("imageTwo", model.getImageTwo());
-                        giftsIntent.putExtra("imageThree", model.getImageThree());
-                        startActivityForResult(giftsIntent, 1);
+                            Intent giftsIntent = new Intent(GiftsListActivity.this, ViewGiftActivity.class);
+                            //add data to send to the next activity
+
+                            giftsIntent.putExtra("personID", getIntent().getStringExtra("personID"));
+                            giftsIntent.putExtra("personName", getIntent().getStringExtra("personName"));
+                            giftsIntent.putExtra("uniqueID", "giftItem");
+                            giftsIntent.putExtra("giftName", model.getGiftName());
+                            giftsIntent.putExtra("giftPrice", model.getGiftPrice());
+                            giftsIntent.putExtra("description", model.getDescription());
+                            giftsIntent.putExtra("bought", model.isBought());
+                            giftsIntent.putExtra("giftKey", getRef(position).getKey());
+                            giftsIntent.putExtra("imageOne", model.getImageOne());
+                            giftsIntent.putExtra("imageTwo", model.getImageTwo());
+                            giftsIntent.putExtra("imageThree", model.getImageThree());
+                            startActivityForResult(giftsIntent, 1);
+
+                        } catch (IndexOutOfBoundsException e){
+
+                        }
+
+
 
                     }
                 });
@@ -276,6 +292,7 @@ public class GiftsListActivity extends AppCompatActivity {
                                             });
 
                                         } catch (Exception e){
+                                            progress.dismiss();
                                             Toast.makeText(GiftsListActivity.this, "Failed to delete gift. Try Again.", Toast.LENGTH_LONG).show();
                                         }
 

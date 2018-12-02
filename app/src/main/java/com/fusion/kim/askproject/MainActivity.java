@@ -165,6 +165,7 @@ public class MainActivity extends AppCompatActivity
                         //reach the desired node and retrieve the gift price
                         for (DataSnapshot snapshot : dataSnapshot.getChildren()){
 
+
                             mTotalItems += snapshot.getChildrenCount();
 
                             final String key = snapshot.getKey().toString();
@@ -447,12 +448,24 @@ public class MainActivity extends AppCompatActivity
                                                                         //removal was a success
                                                                         progress.dismiss();
 
+                                                                        mTotalCost = 0;
+                                                                        mBoughtCost = 0;
+
+                                                                        mTotalItems = 0;
+                                                                        mBoughtItems = 0;
+
                                                                         Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
 
                                                                     } else {
 
                                                                         //removal failed
                                                                         progress.dismiss();
+
+                                                                        mTotalCost = 0;
+                                                                        mBoughtCost = 0;
+
+                                                                        mTotalItems = 0;
+                                                                        mBoughtItems = 0;
 
                                                                         Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
 

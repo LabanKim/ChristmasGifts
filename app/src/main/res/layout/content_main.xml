@@ -81,7 +81,7 @@
             android:textColor="@android:color/black"
             android:layout_toRightOf="@+id/iv_santa"
             android:layout_below="@+id/tv_app_name"
-            tools:text="2/3 gifts bought"/>
+            android:text="0/0 gifts bought"/>
 
         <TextView
             android:id="@+id/tv_total_spent"
@@ -89,7 +89,7 @@
             android:layout_height="wrap_content"
             android:textSize="14sp"
             android:textColor="@android:color/black"
-            tools:text="$70"
+            android:text="$0"
             android:layout_alignParentRight="true"
             android:layout_below="@id/tv_app_name"/>
 
