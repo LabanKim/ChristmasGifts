@@ -111,6 +111,7 @@ public class GiftsListActivity extends AppCompatActivity {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Gift gift = snapshot.getValue(Gift.class);
 
+
                         mTotalPrice += gift.getGiftPrice();
 
                         //if the gift is bought
