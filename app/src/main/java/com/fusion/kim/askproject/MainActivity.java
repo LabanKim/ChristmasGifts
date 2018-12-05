@@ -112,15 +112,6 @@ public class MainActivity extends AppCompatActivity
             }
         };
 
-        if (FirebaseAuth.getInstance().getCurrentUser() == null){
-
-            //check if there is a user logged in. If not then send the user to login activity
-            Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
-            loginIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(loginIntent);
-            finish();
-
-        }
 
         mPeopleListRef = FirebaseDatabase.getInstance().getReference();
 
@@ -147,118 +138,127 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        if (FirebaseAuth.getInstance().getCurrentUser() == null){
 
-        //retrieve the total price of all the gifts of all the users
-        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
+            //check if there is a user logged in. If not then send the user to login activity
+            Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
+            loginIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(loginIntent);
+            finish();
 
-                        mTotalItems = 0;
-                        mTotalCost = 0;
-                        mBoughtCost = 0;
-                        mBoughtItems = 0;
+        } else {
+
+            //retrieve the total price of all the gifts of all the users
+            FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+
+                            mTotalItems = 0;
+                            mTotalCost = 0;
+                            mBoughtCost = 0;
+                            mBoughtItems = 0;
+
+                            //loop through the datasnapshot to get deeper into the firebase root till you
+                            //reach the desired node and retrieve the gift price
+                            for (DataSnapshot snapshot : dataSnapshot.getChildren()){
 
 
+                                mTotalItems += snapshot.getChildrenCount();
 
-                        //loop through the datasnapshot to get deeper into the firebase root till you
-                        //reach the desired node and retrieve the gift price
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                                final String key = snapshot.getKey().toString();
 
+                                FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                                        .child(key).addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
 
-                            mTotalItems += snapshot.getChildrenCount();
+                                        for (DataSnapshot snapshot1 : dataSnapshot.getChildren()){
 
-                            final String key = snapshot.getKey().toString();
+                                            final String key2 = snapshot1.getKey().toString();
 
-                            FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
-                                    .child(key).addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                            FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                                                    .child(key).child(key2).addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                    for (DataSnapshot snapshot1 : dataSnapshot.getChildren()){
+                                                    //check if this node has children, if yes proceed to retrieve the prices
+                                                    if (dataSnapshot.hasChildren()){
 
-                                        final String key2 = snapshot1.getKey().toString();
+                                                        //for each price, add it to the general toatal price
+                                                        mTotalCost += dataSnapshot.child("giftPrice").getValue(Double.class);
 
-                                        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
-                                                .child(key).child(key2).addValueEventListener(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                        //retrieve the bought state of the price
+                                                        boolean bought = dataSnapshot.child("bought").getValue(Boolean.class);
 
-                                                //check if this node has children, if yes proceed to retrieve the prices
-                                                if (dataSnapshot.hasChildren()){
+                                                        //check if the gift is bought
+                                                        if (bought){
 
-                                                    //for each price, add it to the general toatal price
-                                                    mTotalCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+                                                            //if bought, add the price to the total price of bought gifts
+                                                            mBoughtCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+                                                            mBoughtItems += 1;
 
-                                                    //retrieve the bought state of the price
-                                                    boolean bought = dataSnapshot.child("bought").getValue(Boolean.class);
+                                                        }
 
-                                                    //check if the gift is bought
-                                                    if (bought){
+                                                        //set the price to display in the textview
+                                                        mGeneralTotalCostTv.setText("$" + mBoughtCost +"/$" + mTotalCost);
 
-                                                        //if bought, add the price to the total price of bought gifts
-                                                        mBoughtCost += dataSnapshot.child("giftPrice").getValue(Double.class);
-                                                        mBoughtItems += 1;
+                                                        //set the text to display the number of bought items
+                                                        mGeneralBoughtTv.setText(mBoughtItems + "/" + mTotalItems + " gifts bought");
+
+                                                        //calculate the progress of bought items
+                                                        double progress = calculateProgress(mBoughtItems, mTotalItems);
+
+                                                        if (progress == 0){
+
+                                                            mBuyingProcess.setProgress((int) progress);
+                                                            mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_background));
+
+                                                        } else if (progress > 99){
+
+                                                            mBuyingProcess.setProgress((int) progress);
+                                                            mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal));
+
+                                                        } else {
+                                                            mBuyingProcess.setProgress((int) progress);
+                                                            mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal_red));
+
+                                                        }
+
+                                                        Log.e("Retrieved String", dataSnapshot.child("giftPrice").getValue(Double.class).toString());
 
                                                     }
-
-                                                    //set the price to display in the textview
-                                                    mGeneralTotalCostTv.setText("$" + mBoughtCost +"/$" + mTotalCost);
-
-                                                    //set the text to display the number of bought items
-                                                    mGeneralBoughtTv.setText(mBoughtItems + "/" + mTotalItems + " gifts bought");
-
-                                                    //calculate the progress of bought items
-                                                    double progress = calculateProgress(mBoughtItems, mTotalItems);
-
-                                                    if (progress == 0){
-
-                                                        mBuyingProcess.setProgress((int) progress);
-                                                        mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_background));
-
-                                                    } else if (progress > 99){
-
-                                                        mBuyingProcess.setProgress((int) progress);
-                                                        mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal));
-
-                                                    } else {
-                                                        mBuyingProcess.setProgress((int) progress);
-                                                        mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal_red));
-
-                                                    }
-
-                                                    Log.e("Retrieved String", dataSnapshot.child("giftPrice").getValue(Double.class).toString());
 
                                                 }
 
-                                            }
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
 
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
+                                                }
+                                            });
 
-                                            }
-                                        });
+                                        }
+
 
                                     }
 
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
 
-                                }
+                                    }
+                                });
 
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {
-
-                                }
-                            });
+                            }
 
                         }
 
-                    }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                        }
+                    });
 
-                    }
-                });
+        }
 
 
 
