@@ -443,10 +443,6 @@ public class MainActivity extends AppCompatActivity
                                                         if (task.isSuccessful()){
 
                                                             //if removal was successful then remove the person
-                                                            mTotalItems = 0;
-                                                            mTotalCost = 0;
-                                                            mBoughtCost = 0;
-                                                            mBoughtItems = 0;
 
                                                             mPeopleListRef.child("PeopleList").child(mAuth.getCurrentUser().getUid())
                                                                     .child(getRef(position).getKey())
@@ -459,11 +455,10 @@ public class MainActivity extends AppCompatActivity
                                                                         //removal was a success
                                                                         progress.dismiss();
 
-                                                                        mTotalCost = 0;
-                                                                        mBoughtCost = 0;
-
-                                                                        mTotalItems = 0;
-                                                                        mBoughtItems = 0;
+                                                                        Intent intent = getIntent();
+                                                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                                        startActivity(intent);
+                                                                        finish();
 
                                                                         Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
 
@@ -472,11 +467,6 @@ public class MainActivity extends AppCompatActivity
                                                                         //removal failed
                                                                         progress.dismiss();
 
-                                                                        mTotalCost = 0;
-                                                                        mBoughtCost = 0;
-
-                                                                        mTotalItems = 0;
-                                                                        mBoughtItems = 0;
 
                                                                         Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
 
