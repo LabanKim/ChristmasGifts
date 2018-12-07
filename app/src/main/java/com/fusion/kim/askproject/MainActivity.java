@@ -148,16 +148,16 @@ public class MainActivity extends AppCompatActivity
 
         } else {
 
+            mTotalItems = 0;
+            mTotalCost = 0;
+            mBoughtCost = 0;
+            mBoughtItems = 0;
+
             //retrieve the total price of all the gifts of all the users
             FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                     .addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-
-                            mTotalItems = 0;
-                            mTotalCost = 0;
-                            mBoughtCost = 0;
-                            mBoughtItems = 0;
 
                             //loop through the datasnapshot to get deeper into the firebase root till you
                             //reach the desired node and retrieve the gift price
