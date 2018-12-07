@@ -148,115 +148,7 @@ public class MainActivity extends AppCompatActivity
 
         } else {
 
-            mTotalItems = 0;
-            mTotalCost = 0;
-            mBoughtCost = 0;
-            mBoughtItems = 0;
-
-            //retrieve the total price of all the gifts of all the users
-            FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                    .addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-
-                            //loop through the datasnapshot to get deeper into the firebase root till you
-                            //reach the desired node and retrieve the gift price
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-
-
-                                mTotalItems += snapshot.getChildrenCount();
-
-                                final String key = snapshot.getKey().toString();
-
-                                FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
-                                        .child(key).addValueEventListener(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                                        for (DataSnapshot snapshot1 : dataSnapshot.getChildren()){
-
-                                            final String key2 = snapshot1.getKey().toString();
-
-                                            FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
-                                                    .child(key).child(key2).addValueEventListener(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(DataSnapshot dataSnapshot) {
-
-                                                    //check if this node has children, if yes proceed to retrieve the prices
-                                                    if (dataSnapshot.hasChildren()){
-
-                                                        //for each price, add it to the general toatal price
-                                                        mTotalCost += dataSnapshot.child("giftPrice").getValue(Double.class);
-
-                                                        //retrieve the bought state of the price
-                                                        boolean bought = dataSnapshot.child("bought").getValue(Boolean.class);
-
-                                                        //check if the gift is bought
-                                                        if (bought){
-
-                                                            //if bought, add the price to the total price of bought gifts
-                                                            mBoughtCost += dataSnapshot.child("giftPrice").getValue(Double.class);
-                                                            mBoughtItems += 1;
-
-                                                        }
-
-                                                        //set the price to display in the textview
-                                                        mGeneralTotalCostTv.setText("$" + mBoughtCost +"/$" + mTotalCost);
-
-                                                        //set the text to display the number of bought items
-                                                        mGeneralBoughtTv.setText(mBoughtItems + "/" + mTotalItems + " gifts bought");
-
-                                                        //calculate the progress of bought items
-                                                        double progress = calculateProgress(mBoughtItems, mTotalItems);
-
-                                                        if (progress == 0){
-
-                                                            mBuyingProcess.setProgress((int) progress);
-                                                            mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_background));
-
-                                                        } else if (progress > 99){
-
-                                                            mBuyingProcess.setProgress((int) progress);
-                                                            mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal));
-
-                                                        } else {
-                                                            mBuyingProcess.setProgress((int) progress);
-                                                            mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal_red));
-
-                                                        }
-
-                                                        Log.e("Retrieved String", dataSnapshot.child("giftPrice").getValue(Double.class).toString());
-
-                                                    }
-
-                                                }
-
-                                                @Override
-                                                public void onCancelled(DatabaseError databaseError) {
-
-                                                }
-                                            });
-
-                                        }
-
-
-                                    }
-
-                                    @Override
-                                    public void onCancelled(DatabaseError databaseError) {
-
-                                    }
-                                });
-
-                            }
-
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
+            loadTotals();
 
         }
 
@@ -455,10 +347,12 @@ public class MainActivity extends AppCompatActivity
                                                                         //removal was a success
                                                                         progress.dismiss();
 
-                                                                        Intent intent = getIntent();
+                                                                        /*Intent intent = getIntent();
                                                                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                                                         startActivity(intent);
-                                                                        finish();
+                                                                        finish();*/
+
+                                                                        loadTotals();
 
                                                                         Toast.makeText(MainActivity.this, "Person Removed Successfully", Toast.LENGTH_LONG).show();
 
@@ -466,6 +360,8 @@ public class MainActivity extends AppCompatActivity
 
                                                                         //removal failed
                                                                         progress.dismiss();
+
+                                                                        loadTotals();
 
 
                                                                         Toast.makeText(MainActivity.this, "Failed to remove person. Try Again", Toast.LENGTH_LONG).show();
@@ -596,6 +492,119 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    //method to load buying progress and total gifts bought
+    private void loadTotals(){
+        mTotalItems = 0;
+        mTotalCost = 0;
+        mBoughtCost = 0;
+        mBoughtItems = 0;
+
+        //retrieve the total price of all the gifts of all the users
+        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        //loop through the datasnapshot to get deeper into the firebase root till you
+                        //reach the desired node and retrieve the gift price
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+
+
+                            mTotalItems += snapshot.getChildrenCount();
+
+                            final String key = snapshot.getKey().toString();
+
+                            FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                                    .child(key).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                    for (DataSnapshot snapshot1 : dataSnapshot.getChildren()){
+
+                                        final String key2 = snapshot1.getKey().toString();
+
+                                        FirebaseDatabase.getInstance().getReference().child("GiftsList").child(mAuth.getCurrentUser().getUid())
+                                                .child(key).child(key2).addValueEventListener(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                //check if this node has children, if yes proceed to retrieve the prices
+                                                if (dataSnapshot.hasChildren()){
+
+                                                    //for each price, add it to the general toatal price
+                                                    mTotalCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+
+                                                    //retrieve the bought state of the price
+                                                    boolean bought = dataSnapshot.child("bought").getValue(Boolean.class);
+
+                                                    //check if the gift is bought
+                                                    if (bought){
+
+                                                        //if bought, add the price to the total price of bought gifts
+                                                        mBoughtCost += dataSnapshot.child("giftPrice").getValue(Double.class);
+                                                        mBoughtItems += 1;
+
+                                                    }
+
+                                                    //set the price to display in the textview
+                                                    mGeneralTotalCostTv.setText("$" + mBoughtCost +"/$" + mTotalCost);
+
+                                                    //set the text to display the number of bought items
+                                                    mGeneralBoughtTv.setText(mBoughtItems + "/" + mTotalItems + " gifts bought");
+
+                                                    //calculate the progress of bought items
+                                                    double progress = calculateProgress(mBoughtItems, mTotalItems);
+
+                                                    if (progress == 0){
+
+                                                        mBuyingProcess.setProgress((int) progress);
+                                                        mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_background));
+
+                                                    } else if (progress > 99){
+
+                                                        mBuyingProcess.setProgress((int) progress);
+                                                        mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal));
+
+                                                    } else {
+                                                        mBuyingProcess.setProgress((int) progress);
+                                                        mBuyingProcess.setProgressDrawable(getResources().getDrawable(R.drawable.custom_progress_bar_horizontal_red));
+
+                                                    }
+
+                                                    Log.e("Retrieved String", dataSnapshot.child("giftPrice").getValue(Double.class).toString());
+
+                                                }
+
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+
+                                            }
+                                        });
+
+                                    }
+
+
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
     }
 
 
